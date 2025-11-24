@@ -4,21 +4,27 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
-  Search,
-  Users,
-  Sparkles,
   Shield,
-  Clock,
-  Building2,
+  FileCheck,
+  Brain,
+  ScanLine,
+  Lock,
+  Users,
   CheckCircle2,
   ArrowRight,
   Star,
-  Zap,
+  Sparkles,
   Target,
   BarChart3,
   GraduationCap,
+  Award,
+  Fingerprint,
+  Briefcase,
+  TrendingUp,
+  Clock,
 } from "lucide-react"
 import Link from "next/link"
+import { UniversityLogo } from "@/components/university-logo"
 
 export default function HomePage() {
   return (
@@ -27,71 +33,71 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-background via-primary/5 to-secondary/10">
-          <div className="absolute inset-0 bg-[url('/abstract-geometric-pattern.png')] opacity-5" />
-          <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
+        <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-white dark:from-slate-950 dark:via-blue-950/30 dark:to-slate-900">
+          <div className="absolute inset-0">
+            <div className="absolute top-20 right-20 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-20 left-20 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl" />
+          </div>
+          <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
             <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
-              <div className="animate-slide-in-up">
-                <Badge className="mb-6 bg-primary/10 text-primary hover:bg-primary/20 border-primary/20">
-                  <Sparkles className="mr-1 h-3 w-3" />
-                  Matching IA Nouvelle Génération
-                </Badge>
-                <h1 className="text-5xl font-bold tracking-tight lg:text-7xl text-balance mb-6">
-                  Trouvez le{" "}
-                  <span className="bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent animate-gradient">
-                    talent parfait
-                  </span>{" "}
-                  en quelques clics
-                </h1>
-                <p className="text-xl text-muted-foreground leading-relaxed mb-8 text-pretty">
-                  La plateforme de recrutement premium qui révolutionne la connexion entre talents exceptionnels et
-                  entreprises innovantes. Intelligence artificielle, processus optimisé, résultats garantis.
+              <div className="animate-slide-in-up space-y-8">
+                <div>
+                  <Badge className="mb-6 bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 text-sm px-4 py-1.5">
+                    <Shield className="mr-2 h-4 w-4" />
+                    Certification Blockchain & IA
+                  </Badge>
+                  <h1 className="text-5xl font-bold tracking-tight lg:text-7xl text-balance leading-tight">
+                    Sécurisez vos{" "}
+                    <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+                      diplômes
+                    </span>{" "}
+                    <br />avec la blockchain
+                  </h1>
+                </div>
+                <p className="text-xl text-muted-foreground leading-relaxed max-w-xl">
+                  ACADYS révolutionne la certification académique avec une infrastructure cryptographique sécurisée, 
+                  un matching IA intelligent et une vérification publique instantanée.
                 </p>
-                <div className="flex flex-wrap gap-4">
-                  <Button
-                    size="lg"
-                    className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 transition-opacity text-lg h-14 px-8"
-                    asChild
-                  >
-                    <Link href="/signup">
-                      Commencer gratuitement
-                      <ArrowRight className="ml-2 h-5 w-5" />
+                <div>
+                  <Button size="lg" className="bg-primary hover:bg-primary/90 h-14 px-8 text-base shadow-lg" asChild>
+                    <Link href="/verify">
+                      <ScanLine className="mr-2 h-5 w-5" />
+                      Vérifier un diplôme
                     </Link>
                   </Button>
-                  <Button size="lg" variant="outline" className="text-lg h-14 px-8 bg-transparent" asChild>
-                    <Link href="/jobs">Explorer les offres</Link>
-                  </Button>
                 </div>
-                <div className="flex items-center gap-8 mt-10">
+                <div className="flex items-center gap-8 pt-4">
                   <div>
-                    <div className="text-3xl font-bold text-primary">50K+</div>
-                    <div className="text-sm text-muted-foreground">Offres actives</div>
+                    <div className="text-3xl lg:text-4xl font-bold text-primary">10K+</div>
+                    <div className="text-sm text-muted-foreground mt-1">Diplômes certifiés</div>
                   </div>
                   <div className="h-12 w-px bg-border" />
                   <div>
-                    <div className="text-3xl font-bold text-secondary">120K+</div>
-                    <div className="text-sm text-muted-foreground">Candidats inscrits</div>
+                    <div className="text-3xl lg:text-4xl font-bold text-primary">50+</div>
+                    <div className="text-sm text-muted-foreground mt-1">Universités</div>
                   </div>
                   <div className="h-12 w-px bg-border" />
                   <div>
-                    <div className="text-3xl font-bold text-primary">98%</div>
-                    <div className="text-sm text-muted-foreground">Satisfaction</div>
+                    <div className="text-3xl lg:text-4xl font-bold text-primary">100%</div>
+                    <div className="text-sm text-muted-foreground mt-1">Sécurisé</div>
                   </div>
                 </div>
               </div>
 
               <div className="relative animate-fade-in">
-                <div className="absolute -top-4 -right-4 h-72 w-72 bg-primary/20 rounded-full blur-3xl animate-float" />
+                <div className="absolute -top-10 -right-10 w-96 h-96 bg-gradient-to-br from-primary/20 to-blue-400/20 rounded-full blur-3xl animate-pulse" />
                 <div
-                  className="absolute -bottom-4 -left-4 h-72 w-72 bg-secondary/20 rounded-full blur-3xl animate-float"
-                  style={{ animationDelay: "3s" }}
+                  className="absolute -bottom-10 -left-10 w-96 h-96 bg-gradient-to-tr from-blue-500/20 to-primary/20 rounded-full blur-3xl animate-pulse"
+                  style={{ animationDelay: "2s" }}
                 />
                 <div className="relative">
-                  <img
-                    src="/modern-job-search-dashboard-interface.jpg"
-                    alt="TalentHub Dashboard"
-                    className="rounded-2xl shadow-2xl border border-border"
-                  />
+                  <div className="relative rounded-3xl overflow-hidden shadow-2xl ring-1 ring-black/5 transform hover:scale-[1.02] transition-transform duration-300">
+                    <img 
+                      src="/hero-acadys.jpg" 
+                      alt="ACADYS - Plateforme de certification académique" 
+                      className="w-full h-auto object-cover"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -103,56 +109,56 @@ export default function HomePage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <Badge className="mb-4 bg-secondary/10 text-secondary hover:bg-secondary/20 border-secondary/20">
-                Fonctionnalités Premium
+                Technologies de pointe
               </Badge>
-              <h2 className="text-4xl font-bold mb-4 text-balance">Une plateforme pensée pour votre succès</h2>
+              <h2 className="text-4xl font-bold mb-4 text-balance">Une plateforme complète et sécurisée</h2>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
-                Des outils professionnels de pointe pour simplifier et accélérer vos recrutements
+                Certification cryptographique, intelligence artificielle et vérification publique réunis
               </p>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {[
                 {
-                  icon: Sparkles,
+                  icon: Shield,
+                  title: "Certification Blockchain",
+                  description:
+                    "Signature numérique SHA-256 + Ed25519 avec ancrage blockchain pour une sécurité maximale et une traçabilité totale.",
+                  color: "text-primary",
+                },
+                {
+                  icon: ScanLine,
+                  title: "QR Code de Vérification",
+                  description:
+                    "Chaque diplôme génère un QR code unique permettant une vérification instantanée et publique de l'authenticité.",
+                  color: "text-secondary",
+                },
+                {
+                  icon: Brain,
                   title: "Matching IA Intelligent",
                   description:
-                    "Notre algorithme analyse compétences, expériences et préférences pour des recommandations ultra-précises.",
+                    "Extraction automatique des compétences via NLP et correspondance intelligente avec les offres d'emploi.",
                   color: "text-primary",
                 },
                 {
-                  icon: Search,
-                  title: "Filtres Avancés",
+                  icon: Fingerprint,
+                  title: "Hash Cryptographique",
                   description:
-                    "Recherche multicritères sophistiquée : localisation, salaire, télétravail, compétences techniques...",
-                  color: "text-secondary",
-                },
-                {
-                  icon: Clock,
-                  title: "Gain de Temps",
-                  description:
-                    "Réduisez votre temps de recrutement de 70% grâce à notre processus optimisé et automatisé.",
+                    "Chaque document possède une empreinte unique et infalsifiable garantissant son intégrité à vie.",
                   color: "text-primary",
-                },
-                {
-                  icon: Shield,
-                  title: "Vérification Profils",
-                  description:
-                    "Tous les profils sont vérifiés et validés pour garantir authenticité et professionnalisme.",
-                  color: "text-secondary",
                 },
                 {
                   icon: BarChart3,
-                  title: "Analytics Avancés",
+                  title: "Analytics en Temps Réel",
                   description:
-                    "Tableaux de bord complets avec métriques temps réel et insights pour optimiser vos performances.",
+                    "Tableaux de bord dynamiques avec indicateurs de certification, vérifications et tendances du marché.",
                   color: "text-primary",
                 },
                 {
-                  icon: Zap,
-                  title: "Notifications Temps Réel",
-                  description: "Restez informé instantanément : nouvelles candidatures, messages, matchs parfaits...",
-                  color: "text-secondary",
+                  icon: Lock,
+                  title: "Conformité RGPD",
+                  description: "Protection des données personnelles, consentement explicite et droit à l'oubli respectés.",
+                  color: "text-primary",
                 },
               ].map((feature, idx) => (
                 <Card
@@ -177,11 +183,11 @@ export default function HomePage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <Badge className="mb-4 bg-primary/10 text-primary hover:bg-primary/20 border-primary/20">
-                Processus Simplifié
+                Processus de Certification
               </Badge>
-              <h2 className="text-4xl font-bold mb-4 text-balance">Comment ça fonctionne ?</h2>
+              <h2 className="text-4xl font-bold mb-4 text-balance">Comment fonctionne la certification ?</h2>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
-                Trois étapes simples pour transformer votre recherche d'emploi ou vos recrutements
+                Un processus cryptographique sécurisé en trois étapes simples
               </p>
             </div>
 
@@ -189,24 +195,24 @@ export default function HomePage() {
               {[
                 {
                   step: "01",
-                  title: "Créez votre profil",
+                  title: "Émission du diplôme",
                   description:
-                    "Remplissez votre profil complet en quelques minutes. CV, compétences, préférences... Notre interface intuitive vous guide à chaque étape.",
-                  icon: Users,
+                    "L'université téléverse le document officiel. Le système calcule automatiquement son hash SHA-256 et le signe avec une clé privée Ed25519.",
+                  icon: FileCheck,
                 },
                 {
                   step: "02",
-                  title: "IA trouve les matchs",
+                  title: "Génération QR Code",
                   description:
-                    "Notre intelligence artificielle analyse votre profil et identifie automatiquement les meilleures opportunités ou candidats selon vos critères.",
-                  icon: Sparkles,
+                    "Un QR code unique est généré et apposé sur le diplôme. Le hash est ancré sur la blockchain pour garantir l'antériorité et l'immuabilité.",
+                  icon: ScanLine,
                 },
                 {
                   step: "03",
-                  title: "Connectez et recrutez",
+                  title: "Vérification publique",
                   description:
-                    "Communiquez directement via notre messagerie sécurisée, planifiez des entretiens et finalisez vos recrutements en toute simplicité.",
-                  icon: Target,
+                    "Toute personne peut scanner le QR code ou soumettre le document pour vérifier instantanément son authenticité et consulter les métadonnées.",
+                  icon: Shield,
                 },
               ].map((step, idx) => (
                 <div key={idx} className="relative">
@@ -214,7 +220,7 @@ export default function HomePage() {
                     <div className="hidden lg:block absolute top-12 left-full w-full h-0.5 bg-gradient-to-r from-primary to-transparent" />
                   )}
                   <div className="relative">
-                    <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-gradient-to-br from-primary to-secondary mb-6">
+                    <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-gradient-to-br from-primary to-primary/70 mb-6">
                       <step.icon className="h-12 w-12 text-primary-foreground" />
                     </div>
                     <div className="absolute -top-2 -left-2 text-6xl font-bold text-primary/10">{step.step}</div>
@@ -231,23 +237,23 @@ export default function HomePage() {
         <section className="py-20 bg-muted/30">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid gap-12 lg:grid-cols-3">
-              {/* Candidates */}
+              {/* Students */}
               <Card className="p-8 lg:p-10 border-2 hover:border-primary/50 transition-colors">
                 <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 mb-6">
                   <Users className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-3xl font-bold mb-4">Pour les candidats</h3>
+                <h3 className="text-3xl font-bold mb-4">Espace Étudiant</h3>
                 <p className="text-muted-foreground mb-6 leading-relaxed">
-                  Accédez aux meilleures opportunités et boostez votre carrière
+                  Valorisez vos compétences et trouvez les meilleures opportunités
                 </p>
                 <ul className="space-y-4 mb-8">
                   {[
-                    "Recommandations personnalisées par IA",
-                    "Profil visible par 10,000+ recruteurs",
-                    "Alertes emploi en temps réel",
-                    "CV builder professionnel",
-                    "Préparation entretiens & conseils carrière",
-                    "Suivi candidatures centralisé",
+                    "Profil enrichi automatiquement",
+                    "Extraction IA des compétences (NLP)",
+                    "Matching intelligent avec offres",
+                    "Diplômes certifiés blockchain",
+                    "Notifications ciblées personnalisées",
+                    "Portfolio de compétences visualisé",
                   ].map((benefit, idx) => (
                     <li key={idx} className="flex items-start gap-3">
                       <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
@@ -255,71 +261,71 @@ export default function HomePage() {
                     </li>
                   ))}
                 </ul>
-                <Button className="w-full bg-gradient-to-r from-primary to-secondary" size="lg" asChild>
+                <Button className="w-full bg-gradient-to-r from-primary to-primary/80" size="lg" asChild>
                   <Link href="/candidate">
-                    Créer mon profil candidat
+                    Créer mon profil étudiant
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
               </Card>
 
               {/* Recruiters */}
-              <Card className="p-8 lg:p-10 border-2 hover:border-secondary/50 transition-colors">
-                <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-secondary/10 to-secondary/5 mb-6">
-                  <Building2 className="h-8 w-8 text-secondary" />
+              <Card className="p-8 lg:p-10 border-2 hover:border-primary/40 transition-colors">
+                <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 mb-6">
+                  <Briefcase className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-3xl font-bold mb-4">Pour les recruteurs</h3>
+                <h3 className="text-3xl font-bold mb-4">Espace Recruteur</h3>
                 <p className="text-muted-foreground mb-6 leading-relaxed">
-                  Trouvez les talents parfaits et accélérez vos recrutements
+                  Accédez à des talents vérifiés avec diplômes authentifiés
                 </p>
                 <ul className="space-y-4 mb-8">
                   {[
-                    "Matching intelligent candidats qualifiés",
-                    "Base de 120,000+ profils vérifiés",
-                    "Gestion simplifiée des candidatures",
-                    "Analytics & reporting avancés",
-                    "Branding employeur premium",
-                    "Support dédié & accompagnement",
+                    "Profils avec diplômes certifiés",
+                    "Vérification instantanée blockchain",
+                    "Matching IA compétences-offres",
+                    "Analytics et reporting temps réel",
+                    "Messagerie intégrée sécurisée",
+                    "Détection automatique compétences",
                   ].map((benefit, idx) => (
                     <li key={idx} className="flex items-start gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-secondary flex-shrink-0 mt-0.5" />
+                      <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                       <span className="text-foreground">{benefit}</span>
                     </li>
                   ))}
                 </ul>
-                <Button className="w-full bg-gradient-to-r from-secondary to-primary" size="lg" asChild>
+                <Button className="w-full bg-gradient-to-r from-primary/90 to-primary/70" size="lg" asChild>
                   <Link href="/recruiter">
-                    Commencer à recruter
+                    Accéder à l'espace recruteur
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
               </Card>
 
               {/* Universities */}
-              <Card className="p-8 lg:p-10 border-2 hover:border-purple-500/50 transition-colors">
-                <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-purple-500/10 to-purple-500/5 mb-6">
-                  <GraduationCap className="h-8 w-8 text-purple-500" />
+              <Card className="p-8 lg:p-10 border-2 hover:border-primary/60 transition-colors">
+                <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 mb-6">
+                  <GraduationCap className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-3xl font-bold mb-4">Pour les universités</h3>
+                <h3 className="text-3xl font-bold mb-4">Espace Université</h3>
                 <p className="text-muted-foreground mb-6 leading-relaxed">
-                  Certifiez et sécurisez vos diplômes avec la blockchain
+                  Émettez et gérez des diplômes numériques sécurisés
                 </p>
                 <ul className="space-y-4 mb-8">
                   {[
-                    "Certification blockchain sécurisée",
-                    "Vérification instantanée des diplômes",
-                    "Gestion centralisée des étudiants",
-                    "Hash cryptographique unique",
-                    "QR codes de vérification",
-                    "Lutte contre la fraude",
+                    "Certification SHA-256 + Ed25519",
+                    "Génération QR codes uniques",
+                    "Ancrage blockchain immutable",
+                    "Tableau de bord analytique",
+                    "Gestion étudiants centralisée",
+                    "Conformité RGPD & eIDAS",
                   ].map((benefit, idx) => (
                     <li key={idx} className="flex items-start gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                      <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                       <span className="text-foreground">{benefit}</span>
                     </li>
                   ))}
                 </ul>
-                <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500" size="lg" asChild>
+                <Button className="w-full bg-gradient-to-r from-primary to-primary/60" size="lg" asChild>
                   <Link href="/university">
                     Accéder au portail université
                     <ArrowRight className="ml-2 h-5 w-5" />
@@ -330,98 +336,132 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Testimonials */}
+        {/* Stats Section */}
         <section className="py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <Badge className="mb-4 bg-secondary/10 text-secondary hover:bg-secondary/20 border-secondary/20">
-                Témoignages
+              <Badge className="mb-4 bg-primary/10 text-primary hover:bg-primary/20 border-primary/20">
+                Impact & Performance
               </Badge>
-              <h2 className="text-4xl font-bold mb-4 text-balance">Ils nous font confiance</h2>
+              <h2 className="text-4xl font-bold mb-4 text-balance">ACADYS en chiffres</h2>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto text-pretty">
-                Découvrez comment TalentHub Pro transforme les carrières et les recrutements
+                La confiance des institutions académiques et professionnelles
               </p>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
               {[
                 {
-                  name: "Sophie Martin",
-                  role: "Développeuse Full-Stack",
-                  company: "Passée chez TechCorp",
-                  content:
-                    "J'ai trouvé mon emploi de rêve en moins de 2 semaines. Le matching IA est incroyablement précis et m'a proposé exactement ce que je cherchais.",
-                  rating: 5,
+                  icon: Award,
+                  value: "10,000+",
+                  label: "Diplômes certifiés",
+                  description: "Documents académiques sécurisés",
+                  color: "text-primary",
                 },
                 {
-                  name: "Thomas Dubois",
-                  role: "Directeur RH",
-                  company: "InnovateLabs",
-                  content:
-                    "Nous avons réduit notre temps de recrutement de 60%. La qualité des candidats proposés est exceptionnelle. Un outil indispensable.",
-                  rating: 5,
+                  icon: GraduationCap,
+                  value: "50+",
+                  label: "Universités partenaires",
+                  description: "Établissements de confiance",
+                  color: "text-primary",
                 },
                 {
-                  name: "Marie Leclerc",
-                  role: "Data Scientist",
-                  company: "Embauchée chez DataFlow",
-                  content:
-                    "Interface intuitive, processus fluide, résultats rapides. TalentHub Pro dépasse largement les autres plateformes que j'ai essayées.",
-                  rating: 5,
+                  icon: TrendingUp,
+                  value: "95%",
+                  label: "Taux de matching",
+                  description: "Précision de l'IA",
+                  color: "text-primary",
                 },
-              ].map((testimonial, idx) => (
-                <Card key={idx} className="p-6 hover:shadow-lg transition-all duration-300">
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                    ))}
+                {
+                  icon: Clock,
+                  value: "< 2 sec",
+                  label: "Vérification instantanée",
+                  description: "Via QR code ou URL",
+                  color: "text-primary",
+                },
+              ].map((stat, idx) => (
+                <Card key={idx} className="p-6 text-center hover:shadow-lg transition-all duration-300 border-border/50">
+                  <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 mb-4">
+                    <stat.icon className={`h-8 w-8 ${stat.color}`} />
                   </div>
-                  <p className="text-foreground mb-6 leading-relaxed italic">"{testimonial.content}"</p>
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground font-bold">
-                      {testimonial.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </div>
-                    <div>
-                      <div className="font-semibold">{testimonial.name}</div>
-                      <div className="text-sm text-muted-foreground">{testimonial.role}</div>
-                      <div className="text-xs text-muted-foreground">{testimonial.company}</div>
-                    </div>
-                  </div>
+                  <div className={`text-4xl font-bold mb-2 ${stat.color}`}>{stat.value}</div>
+                  <div className="text-lg font-semibold mb-1">{stat.label}</div>
+                  <p className="text-sm text-muted-foreground">{stat.description}</p>
                 </Card>
               ))}
             </div>
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="py-20 bg-gradient-to-br from-primary via-primary to-secondary text-primary-foreground">
+        {/* Universités Partenaires Section */}
+        <section className="py-20 bg-gradient-to-br from-primary via-primary to-primary/80 text-primary-foreground">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <h2 className="text-4xl lg:text-5xl font-bold mb-6 text-balance">
-                Prêt à transformer votre carrière ou vos recrutements ?
+            <div className="text-center mb-12">
+              <h2 className="text-3xl lg:text-4xl font-bold mb-4 text-primary-foreground">
+                Universités Partenaires au Sénégal
               </h2>
-              <p className="text-xl text-primary-foreground/90 mb-10 max-w-3xl mx-auto text-pretty">
-                Rejoignez 120,000+ professionnels qui ont déjà fait le choix de l'excellence
+              <p className="text-lg text-primary-foreground/80 max-w-2xl mx-auto">
+                Les grandes institutions académiques qui font confiance à ACADYS
               </p>
-              <div className="flex flex-wrap justify-center gap-4">
-                <Button size="lg" variant="secondary" className="text-lg h-14 px-8" asChild>
-                  <Link href="/signup">
-                    Commencer gratuitement
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="text-lg h-14 px-8 bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10"
-                  asChild
-                >
-                  <Link href="/contact">Demander une démo</Link>
-                </Button>
+            </div>
+
+            <div className="relative overflow-hidden">
+              <div className="flex animate-scroll">
+                {/* Premier groupe */}
+                {[
+                  { name: "UCAD", logo: "/logos/ucad.png", color: "text-sky-500" },
+                  { name: "UADB", logo: "/logos/uadb.png", color: "text-blue-600" },
+                  { name: "UIDT", logo: "/logos/uidt.png", color: "text-blue-700" },
+                  { name: "UGB", logo: "/logos/ugb.png", color: "text-orange-600" },
+                  { name: "USSEIN", logo: "/logos/ussein.png", color: "text-lime-600" },
+                  { name: "UASZ", logo: "/logos/uasz.png", color: "text-green-600" },
+                  { name: "UAM", logo: "/logos/uam.png", color: "text-sky-400" },
+                ].map((university, idx) => (
+                  <div key={idx} className="flex flex-col items-center gap-3 group flex-shrink-0 mx-8">
+                    <div className="h-24 w-24 bg-white rounded-2xl flex items-center justify-center p-3 shadow-xl group-hover:shadow-2xl group-hover:scale-105 transition-all duration-300">
+                      <UniversityLogo 
+                        src={university.logo}
+                        alt={`${university.name} Logo`}
+                        fallbackColor={university.color}
+                      />
+                    </div>
+                    <span className="text-sm font-semibold text-primary-foreground">{university.name}</span>
+                  </div>
+                ))}
+                {/* Duplication pour effet infini */}
+                {[
+                  { name: "UCAD", logo: "/logos/ucad.png", color: "text-sky-500" },
+                  { name: "UADB", logo: "/logos/uadb.png", color: "text-blue-600" },
+                  { name: "UIDT", logo: "/logos/uidt.png", color: "text-blue-700" },
+                  { name: "UGB", logo: "/logos/ugb.png", color: "text-orange-600" },
+                  { name: "USSEIN", logo: "/logos/ussein.png", color: "text-lime-600" },
+                  { name: "UASZ", logo: "/logos/uasz.png", color: "text-green-600" },
+                  { name: "UAM", logo: "/logos/uam.png", color: "text-sky-400" },
+                ].map((university, idx) => (
+                  <div key={`duplicate-${idx}`} className="flex flex-col items-center gap-3 group flex-shrink-0 mx-8">
+                    <div className="h-24 w-24 bg-white rounded-2xl flex items-center justify-center p-3 shadow-xl group-hover:shadow-2xl group-hover:scale-105 transition-all duration-300">
+                      <UniversityLogo 
+                        src={university.logo}
+                        alt={`${university.name} Logo`}
+                        fallbackColor={university.color}
+                      />
+                    </div>
+                    <span className="text-sm font-semibold text-primary-foreground">{university.name}</span>
+                  </div>
+                ))}
               </div>
+            </div>
+            
+            <div className="mt-12 text-center">
+              <p className="text-sm text-primary-foreground/70 max-w-5xl mx-auto leading-relaxed">
+                <span className="font-semibold">UCAD</span> - Université Cheikh Anta Diop (Dakar) • 
+                <span className="font-semibold"> UADB</span> - Université Alioune Diop de Bambey • 
+                <span className="font-semibold"> UIDT</span> - Université Iba Der Thiam de Thiès • 
+                <span className="font-semibold"> UGB</span> - Université Gaston Berger (Saint-Louis) • 
+                <span className="font-semibold"> USSEIN</span> - Université du Sine Saloum El-Hâdj Ibrahima Niass (Kaolack) • 
+                <span className="font-semibold"> UASZ</span> - Université Assane Seck (Ziguinchor) • 
+                <span className="font-semibold"> UAM</span> - Université Amadou Mahtar Mbow (Dakar)
+              </p>
             </div>
           </div>
         </section>

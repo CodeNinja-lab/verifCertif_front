@@ -3,7 +3,21 @@
 import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Briefcase, Users, Building2, BarChart3, ChevronDown, GraduationCap } from "lucide-react"
+import { 
+  Menu, 
+  X, 
+  Briefcase, 
+  Users, 
+  Building2, 
+  BarChart3, 
+  ChevronDown, 
+  GraduationCap,
+  Shield,
+  ScanLine,
+  Sparkles,
+  FileCheck,
+  Brain
+} from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 
 export function PublicHeader() {
@@ -15,13 +29,18 @@ export function PublicHeader() {
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-x-6 p-4 lg:px-8" aria-label="Global">
         {/* Logo */}
         <div className="flex lg:flex-1">
-          <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2 group">
-            <div className="h-10 w-10 relative">
-              <img src="/ucad-logo.png" alt="Logo UCAD" className="object-contain h-full w-full rounded-xl" />
+          <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-3 group">
+            <div className="h-11 w-11 relative flex items-center justify-center bg-gradient-to-br from-primary to-secondary rounded-xl shadow-lg group-hover:shadow-xl transition-shadow">
+              <Shield className="h-6 w-6 text-white" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              UCAD
-            </span>
+            <div className="flex flex-col">
+              <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                ACADYS
+              </span>
+              <span className="text-[10px] text-muted-foreground font-medium -mt-1">
+                Academic Digital System
+              </span>
+            </div>
           </Link>
         </div>
 
@@ -44,44 +63,44 @@ export function PublicHeader() {
         {/* Desktop navigation */}
         <div className="hidden lg:flex lg:gap-x-8">
           <Link
+            href="/verify"
+            className="flex items-center gap-2 text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors"
+          >
+            <ScanLine className="h-4 w-4" />
+            Vérifier un diplôme
+          </Link>
+          <Link
             href="/jobs"
             className="flex items-center gap-2 text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors"
           >
             <Briefcase className="h-4 w-4" />
             Offres d'emploi
           </Link>
-          <Link
-            href="/companies"
-            className="flex items-center gap-2 text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors"
-          >
-            <Building2 className="h-4 w-4" />
-            Entreprises
-          </Link>
           <div className="relative group">
             <button className="flex items-center gap-1 text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors">
-              Solutions
+              Plateformes
               <ChevronDown className="h-4 w-4" />
             </button>
-            <div className="absolute left-0 top-full mt-2 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+            <div className="absolute left-0 top-full mt-2 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
               <div className="rounded-xl bg-card border border-border shadow-xl p-2">
                 <Link
                   href="/candidate"
                   className="flex items-center gap-3 rounded-lg px-4 py-3 hover:bg-accent transition-colors"
                 >
-                  <Users className="h-5 w-5 text-primary" />
+                  <Users className="h-5 w-5 text-blue-500" />
                   <div>
-                    <div className="font-semibold text-sm">Pour les candidats</div>
-                    <div className="text-xs text-muted-foreground">Trouvez votre emploi idéal</div>
+                    <div className="font-semibold text-sm">Espace Étudiant</div>
+                    <div className="text-xs text-muted-foreground">Profil & Matching IA</div>
                   </div>
                 </Link>
                 <Link
                   href="/recruiter"
                   className="flex items-center gap-3 rounded-lg px-4 py-3 hover:bg-accent transition-colors"
                 >
-                  <BarChart3 className="h-5 w-5 text-secondary" />
+                  <BarChart3 className="h-5 w-5 text-green-500" />
                   <div>
-                    <div className="font-semibold text-sm">Pour les recruteurs</div>
-                    <div className="text-xs text-muted-foreground">Trouvez les meilleurs talents</div>
+                    <div className="font-semibold text-sm">Espace Recruteur</div>
+                    <div className="text-xs text-muted-foreground">Talents vérifiés</div>
                   </div>
                 </Link>
                 <Link
@@ -90,19 +109,53 @@ export function PublicHeader() {
                 >
                   <GraduationCap className="h-5 w-5 text-purple-500" />
                   <div>
-                    <div className="font-semibold text-sm">Pour les universités</div>
-                    <div className="text-xs text-muted-foreground">Certifiez vos diplômes</div>
+                    <div className="font-semibold text-sm">Espace Université</div>
+                    <div className="text-xs text-muted-foreground">Certification numérique</div>
                   </div>
                 </Link>
               </div>
             </div>
           </div>
-          <Link
-            href="/about"
-            className="text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors"
-          >
-            À propos
-          </Link>
+          <div className="relative group">
+            <button className="flex items-center gap-1 text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors">
+              En savoir plus
+              <ChevronDown className="h-4 w-4" />
+            </button>
+            <div className="absolute left-0 top-full mt-2 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+              <div className="rounded-xl bg-card border border-border shadow-xl p-2">
+                <Link
+                  href="/certification-explained"
+                  className="flex items-center gap-3 rounded-lg px-4 py-3 hover:bg-accent transition-colors"
+                >
+                  <FileCheck className="h-5 w-5 text-primary" />
+                  <div>
+                    <div className="font-semibold text-sm">Certification numérique</div>
+                    <div className="text-xs text-muted-foreground">Comment ça marche</div>
+                  </div>
+                </Link>
+                <Link
+                  href="/ai-matching-explained"
+                  className="flex items-center gap-3 rounded-lg px-4 py-3 hover:bg-accent transition-colors"
+                >
+                  <Brain className="h-5 w-5 text-secondary" />
+                  <div>
+                    <div className="font-semibold text-sm">Matching IA</div>
+                    <div className="text-xs text-muted-foreground">Notre technologie</div>
+                  </div>
+                </Link>
+                <Link
+                  href="/about"
+                  className="flex items-center gap-3 rounded-lg px-4 py-3 hover:bg-accent transition-colors"
+                >
+                  <Sparkles className="h-5 w-5 text-purple-500" />
+                  <div>
+                    <div className="font-semibold text-sm">À propos</div>
+                    <div className="text-xs text-muted-foreground">Notre mission</div>
+                  </div>
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* CTA Buttons */}
@@ -122,46 +175,67 @@ export function PublicHeader() {
         <div className="lg:hidden">
           <div className="space-y-2 px-4 pb-6 pt-2">
             <Link
+              href="/verify"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-base font-semibold leading-7 text-foreground hover:bg-accent"
+            >
+              <ScanLine className="h-5 w-5" />
+              Vérifier un diplôme
+            </Link>
+            <Link
               href="/jobs"
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-base font-semibold leading-7 text-foreground hover:bg-accent"
             >
               <Briefcase className="h-5 w-5" />
               Offres d'emploi
             </Link>
-            <Link
-              href="/companies"
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-base font-semibold leading-7 text-foreground hover:bg-accent"
-            >
-              <Building2 className="h-5 w-5" />
-              Entreprises
-            </Link>
-            <Link
-              href="/candidate"
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-base font-semibold leading-7 text-foreground hover:bg-accent"
-            >
-              <Users className="h-5 w-5" />
-              Espace candidat
-            </Link>
-            <Link
-              href="/recruiter"
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-base font-semibold leading-7 text-foreground hover:bg-accent"
-            >
-              <BarChart3 className="h-5 w-5" />
-              Espace recruteur
-            </Link>
-            <Link
-              href="/university"
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-base font-semibold leading-7 text-foreground hover:bg-accent"
-            >
-              <GraduationCap className="h-5 w-5" />
-              Espace université
-            </Link>
-            <Link
-              href="/about"
-              className="block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-foreground hover:bg-accent"
-            >
-              À propos
-            </Link>
+            <div className="border-t border-border my-2 pt-2">
+              <div className="text-xs font-semibold text-muted-foreground px-3 py-2">PLATEFORMES</div>
+              <Link
+                href="/candidate"
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-base font-semibold leading-7 text-foreground hover:bg-accent"
+              >
+                <Users className="h-5 w-5 text-blue-500" />
+                Espace Étudiant
+              </Link>
+              <Link
+                href="/recruiter"
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-base font-semibold leading-7 text-foreground hover:bg-accent"
+              >
+                <BarChart3 className="h-5 w-5 text-green-500" />
+                Espace Recruteur
+              </Link>
+              <Link
+                href="/university"
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-base font-semibold leading-7 text-foreground hover:bg-accent"
+              >
+                <GraduationCap className="h-5 w-5 text-purple-500" />
+                Espace Université
+              </Link>
+            </div>
+            <div className="border-t border-border my-2 pt-2">
+              <div className="text-xs font-semibold text-muted-foreground px-3 py-2">EN SAVOIR PLUS</div>
+              <Link
+                href="/certification-explained"
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-base font-semibold leading-7 text-foreground hover:bg-accent"
+              >
+                <FileCheck className="h-5 w-5" />
+                Certification numérique
+              </Link>
+              <Link
+                href="/ai-matching-explained"
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-base font-semibold leading-7 text-foreground hover:bg-accent"
+              >
+                <Brain className="h-5 w-5" />
+                Matching IA
+              </Link>
+              <Link
+                href="/about"
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-base font-semibold leading-7 text-foreground hover:bg-accent"
+              >
+                <Sparkles className="h-5 w-5" />
+                À propos
+              </Link>
+            </div>
             <div className="pt-4 space-y-2">
               <div className="flex justify-center pb-2">
                 <ThemeToggle />

@@ -18,8 +18,8 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 export const metadata: Metadata = {
-  title: "TalentHub Pro - Premium Job Recruitment Platform",
-  description: "Connect with top talent and leading companies. AI-powered matching for the modern workforce.",
+  title: "ACADYS - Academic Digital System",
+  description: "Plateforme de certification blockchain et matching IA pour diplômes académiques au Sénégal.",
   generator: "v0.app",
   icons: {
     icon: [
