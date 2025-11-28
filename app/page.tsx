@@ -91,9 +91,9 @@ export default function HomePage() {
                   style={{ animationDelay: "2s" }}
                 />
                 <div className="relative">
-                  <div className="relative rounded-3xl overflow-hidden shadow-2xl ring-1 ring-black/5 transform hover:scale-[1.02] transition-transform duration-300">
+                  <div className="-mt-100">
                     <img 
-                      src="/hero-acadys.jpg" 
+                      src="/hero-acadys.png" 
                       alt="ACADYS - Plateforme de certification académique" 
                       className="w-full h-auto object-cover"
                     />
