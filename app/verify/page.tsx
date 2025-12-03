@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
   Briefcase,
   Search,
@@ -16,42 +17,78 @@ import {
   GraduationCap,
   Building2,
   Calendar,
+  Upload,
+  AlertCircle,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
 export default function VerifyPage() {
   const [certId, setCertId] = useState("")
   const [isVerifying, setIsVerifying] = useState(false)
+  const [file, setFile] = useState<File | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [verificationResult, setVerificationResult] = useState<any>(null)
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files?.[0] || null
+    setFile(selected)
+  }
+
   const handleVerify = async () => {
-    setIsVerifying(true)
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    setError(null)
 
-    setVerificationResult({
-      valid: true,
-      student: {
-        name: "Mamadou Diop", // Localized name
-        email: "mamadou.diop@ucad.edu.sn", // Localized email
-      },
-      degree: {
-        title: "Master en Informatique",
-        type: "Master",
-        date: "15 juin 2024",
-        grade: "Très bien",
-      },
-      university: {
-        name: "Université Cheikh Anta Diop", // Localized university
-        location: "Dakar, Sénégal", // Localized location
-      },
-      blockchain: {
-        hash: "a3f5e8c2d1b4f7e9c8d5a2b6f3e1d4c7",
-        block: "892471",
-        timestamp: "2024-06-15 14:30:22",
-      },
-    })
+    if (!file && !certId.trim()) {
+      setError("Veuillez saisir un identifiant OU téléverser le document du diplôme.")
+      return
+    }
 
-    setIsVerifying(false)
+    // Construire la requête vers l'API de vérification publique
+    try {
+      const formData = new FormData()
+
+      if (file) {
+        formData.append("file", file)
+      } else if (certId.trim()) {
+        const value = certId.trim()
+        if (value.length === 36 && value.includes("-")) {
+          formData.append("uuid", value)
+        } else {
+          formData.append("hash_sha256", value)
+        }
+      }
+
+      setIsVerifying(true)
+
+      const response = await fetch(`${API_URL}/documents/verify`, {
+        method: "POST",
+        body: formData,
+      })
+
+      const data = await response.json().catch(() => null)
+
+      if (!response.ok) {
+        const message =
+          data?.message ||
+          data?.error ||
+          `Erreur ${response.status}: ${response.statusText || "Erreur de vérification"}`
+        setError(message)
+        setVerificationResult(null)
+        setIsVerifying(false)
+        return
+      }
+
+      setVerificationResult(data)
+      setIsVerifying(false)
+    } catch (err: any) {
+      console.error("Erreur de vérification:", err)
+      setError(
+        err?.message ||
+          "Erreur lors de la vérification du diplôme. Vérifiez votre connexion et réessayez.",
+      )
+      setIsVerifying(false)
+    }
   }
 
   return (
@@ -83,12 +120,20 @@ export default function VerifyPage() {
         {!verificationResult ? (
           <Card>
             <CardHeader>
-              <CardTitle>Entrez l'ID de certification</CardTitle>
+              <CardTitle>Vérifier un diplôme</CardTitle>
               <CardDescription>
-                Vous pouvez trouver cet identifiant sur le diplôme ou scanner le QR code
+                Saisissez l'identifiant ou le hash du diplôme, ou téléversez directement le fichier à
+                vérifier.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              {error && (
+                <Alert variant="destructive" className="mb-2">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="certId">ID de certification ou Hash blockchain</Label>
                 <div className="relative">
@@ -103,9 +148,34 @@ export default function VerifyPage() {
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="file">Ou téléverser le diplôme (PDF, HTML)</Label>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <div className="relative flex-1">
+                    <Upload className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                      id="file"
+                      type="file"
+                      accept=".pdf,.html,application/pdf"
+                      className="pl-10 h-11"
+                      onChange={handleFileChange}
+                    />
+                  </div>
+                  {file && (
+                    <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+                      {file.name}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Le fichier sera analysé pour recalculer son empreinte (hash) et vérifier sa signature
+                  avec la clé publique de l'université.
+                </p>
+              </div>
+
               <Button
                 onClick={handleVerify}
-                disabled={!certId || isVerifying}
+                disabled={(!certId && !file) || isVerifying}
                 className="w-full h-12 bg-[#009EE0] hover:bg-[#008AC0] transition-opacity"
               >
                 {isVerifying ? (
@@ -123,8 +193,8 @@ export default function VerifyPage() {
 
               <div className="bg-muted/50 rounded-lg p-4 border border-border">
                 <p className="text-sm text-muted-foreground">
-                  La vérification s'effectue directement sur la blockchain pour garantir l'authenticité et l'intégrité
-                  du diplôme. Ce processus est instantané et sécurisé.
+                  La vérification s'effectue sur la base du hash cryptographique du document, de sa
+                  signature numérique (Ed25519) et, lorsque disponible, de son ancrage sur la blockchain.
                 </p>
               </div>
             </CardContent>
@@ -134,19 +204,22 @@ export default function VerifyPage() {
             <Card className="border-2 border-green-200 dark:border-green-800">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-4">
-                  <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-950 flex items-center justify-center flex-shrink-0">
-                    {verificationResult.valid ? (
-                      <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
-                    ) : (
-                      <XCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
-                    )}
-                  </div>
+                    <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-950 flex items-center justify-center flex-shrink-0">
+                      {verificationResult.resultat === "VALIDE" ? (
+                        <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
+                      ) : (
+                        <XCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                      )}
+                    </div>
                   <div className="flex-1">
                     <h3 className="text-xl font-bold text-green-900 dark:text-green-100 mb-1">
-                      Diplôme vérifié avec succès
+                      {verificationResult.resultat === "VALIDE"
+                        ? "Diplôme vérifié avec succès"
+                        : "Diplôme non valide"}
                     </h3>
                     <p className="text-sm text-green-700 dark:text-green-300">
-                      Ce diplôme est authentique et a été certifié sur la blockchain
+                      {verificationResult.message ||
+                        "Résultat de la vérification de l'authenticité du diplôme."}
                     </p>
                   </div>
                 </div>
@@ -162,8 +235,16 @@ export default function VerifyPage() {
                   <div className="space-y-4">
                     <div>
                       <Label className="text-muted-foreground text-sm">Étudiant</Label>
-                      <p className="font-semibold text-lg">{verificationResult.student.name}</p>
-                      <p className="text-sm text-muted-foreground">{verificationResult.student.email}</p>
+                      <p className="font-semibold text-lg">
+                        {verificationResult.document?.etudiant
+                          ? `${verificationResult.document.etudiant.prenom ?? ""} ${
+                              verificationResult.document.etudiant.nom ?? ""
+                            }`.trim() || "Non renseigné"
+                          : "Non renseigné"}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {verificationResult.document?.details?.student_id ?? ""}
+                      </p>
                     </div>
 
                     <div>
@@ -171,12 +252,18 @@ export default function VerifyPage() {
                         <GraduationCap className="h-4 w-4" />
                         Diplôme
                       </Label>
-                      <p className="font-semibold">{verificationResult.degree.title}</p>
+                      <p className="font-semibold">
+                        {verificationResult.document?.titre ?? "Titre non renseigné"}
+                      </p>
                       <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="secondary">{verificationResult.degree.type}</Badge>
-                        <Badge className="bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400">
-                          {verificationResult.degree.grade}
-                        </Badge>
+                        {verificationResult.document?.type && (
+                          <Badge variant="secondary">{verificationResult.document.type}</Badge>
+                        )}
+                        {verificationResult.document?.details?.grade && (
+                          <Badge className="bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400">
+                            {verificationResult.document.details.grade}
+                          </Badge>
+                        )}
                       </div>
                     </div>
 
@@ -185,7 +272,9 @@ export default function VerifyPage() {
                         <Calendar className="h-4 w-4" />
                         Date d'obtention
                       </Label>
-                      <p className="font-medium">{verificationResult.degree.date}</p>
+                      <p className="font-medium">
+                        {verificationResult.document?.date_emission ?? "Non renseignée"}
+                      </p>
                     </div>
                   </div>
 
@@ -195,8 +284,12 @@ export default function VerifyPage() {
                         <Building2 className="h-4 w-4" />
                         Établissement
                       </Label>
-                      <p className="font-semibold">{verificationResult.university.name}</p>
-                      <p className="text-sm text-muted-foreground">{verificationResult.university.location}</p>
+                      <p className="font-semibold">
+                        {verificationResult.document?.administration?.nom ?? "Non renseigné"}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {verificationResult.document?.administration?.type ?? ""}
+                      </p>
                     </div>
 
                     <div className="bg-muted/50 rounded-lg p-4 space-y-2">
@@ -205,19 +298,25 @@ export default function VerifyPage() {
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Hash:</span>
                           <code className="text-xs bg-background px-2 py-1 rounded">
-                            {verificationResult.blockchain.hash.substring(0, 16)}...
+                            {verificationResult.document?.hash_sha256
+                              ? `${verificationResult.document.hash_sha256.substring(0, 16)}...`
+                              : "N/A"}
                           </code>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Bloc:</span>
                           <code className="text-xs bg-background px-2 py-1 rounded">
-                            #{verificationResult.blockchain.block}
+                            {verificationResult.document?.blockchain?.tx_hash
+                              ? "#on-chain"
+                              : "Hors chaîne"}
                           </code>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Horodatage:</span>
                           <code className="text-xs bg-background px-2 py-1 rounded">
-                            {verificationResult.blockchain.timestamp}
+                            {verificationResult.document?.date_certification ??
+                              verificationResult.verification?.date ??
+                              "Non disponible"}
                           </code>
                         </div>
                       </div>
@@ -228,7 +327,15 @@ export default function VerifyPage() {
             </Card>
 
             <div className="flex justify-center">
-              <Button variant="outline" onClick={() => setVerificationResult(null)}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setVerificationResult(null)
+                  setError(null)
+                  setFile(null)
+                  setCertId("")
+                }}
+              >
                 Vérifier un autre diplôme
               </Button>
             </div>

@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -33,14 +34,73 @@ export default function UniversitySignupPage() {
     phone: "",
     universityName: "",
     address: "",
+    accessCode: "",
     password: "",
     confirmPassword: "",
     acceptTerms: false,
   })
 
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
+
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("[v0] University signup:", formData)
+    if (formData.password !== formData.confirmPassword) {
+      setError("Les mots de passe ne correspondent pas.")
+      return
+    }
+
+    setError(null)
+    setLoading(true)
+
+    fetch(`${apiBaseUrl}/auth/register-admin`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prenom: formData.firstName,
+        nom: formData.lastName,
+        email: formData.email,
+        telephone: formData.phone,
+        password: formData.password,
+        password_confirmation: formData.confirmPassword,
+        nom_universite: formData.universityName,
+        adresse_universite: formData.address,
+        code_acces: formData.accessCode,
+      }),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const data = await res.json().catch(() => null)
+          const firstError =
+            data?.message ||
+            (data?.errors && Object.values<string[]>(data.errors)[0]?.[0]) ||
+            "Impossible de créer le compte établissement."
+          throw new Error(firstError)
+        }
+        return res.json()
+      })
+      .then((data) => {
+        const token = data.token as string | undefined
+        const user = data.user as { role?: string } | undefined
+
+        if (token && typeof window !== "undefined") {
+          localStorage.setItem("auth_token", token)
+          if (user) {
+            localStorage.setItem("current_user", JSON.stringify(user))
+          }
+        }
+
+        router.push("/university")
+      })
+      .catch((err: Error) => {
+        setError(err.message)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   }
 
   return (
@@ -69,6 +129,7 @@ export default function UniversitySignupPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {error && <p className="text-sm text-red-500">{error}</p>}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">Prénom</Label>
@@ -125,6 +186,18 @@ export default function UniversitySignupPage() {
                   required
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="accessCode">Code d&apos;accès administrateur</Label>
+              <Input
+                id="accessCode"
+                placeholder="Code fourni par votre administrateur"
+                className="h-11"
+                value={formData.accessCode}
+                onChange={(e) => setFormData({ ...formData, accessCode: e.target.value })}
+                required
+              />
             </div>
 
             <div className="space-y-2">
@@ -225,7 +298,7 @@ export default function UniversitySignupPage() {
             </div>
 
             <Button type="submit" className="w-full h-11 bg-[#009EE0] hover:bg-[#008AC0] transition-opacity">
-              Créer mon compte établissement
+              {loading ? "Création du compte..." : "Créer mon compte établissement"}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </form>

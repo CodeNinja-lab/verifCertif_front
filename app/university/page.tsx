@@ -1,3 +1,5 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
@@ -10,8 +12,135 @@ import {
   CheckCircle2,
   Clock,
   Printer,
+  Key,
+  Copy,
+  Check,
+  AlertCircle,
 } from "lucide-react" // Added Printer icon
 import Link from "next/link"
+import { useState } from "react"
+import { Input } from "@/components/ui/input"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+
+function GenerateAccessCode() {
+  const [generatedCode, setGeneratedCode] = useState<string | null>(null)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  const handleGenerate = async () => {
+    setIsGenerating(true)
+    setError(null)
+    setGeneratedCode(null)
+
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
+      const token = localStorage.getItem("auth_token")
+
+      if (!token) {
+        setError("Vous devez être connecté pour générer un code d'accès")
+        setIsGenerating(false)
+        return
+      }
+
+      const response = await fetch(`${API_URL}/admin-access-codes`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Erreur lors de la génération du code")
+      }
+
+      const result = await response.json()
+      setGeneratedCode(result.code)
+    } catch (err: any) {
+      console.error("Erreur de génération:", err)
+      setError(err.message || "Une erreur est survenue lors de la génération du code")
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  const handleCopy = () => {
+    if (generatedCode) {
+      navigator.clipboard.writeText(generatedCode)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <Button
+          onClick={handleGenerate}
+          disabled={isGenerating}
+          className="bg-[#009EE0] hover:bg-[#008AC0]"
+        >
+          {isGenerating ? (
+            <>
+              <div className="mr-2 h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Génération...
+            </>
+          ) : (
+            <>
+              <Key className="mr-2 h-4 w-4" />
+              Générer un code d'accès
+            </>
+          )}
+        </Button>
+      </div>
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {generatedCode && (
+        <div className="space-y-3">
+          <Alert>
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <AlertDescription>
+              <div className="space-y-2">
+                <p className="font-medium">Code d'accès généré avec succès !</p>
+                <p className="text-sm text-muted-foreground">
+                  Ce code peut être utilisé une seule fois pour l'inscription d'une nouvelle université. Partagez-le de manière sécurisée.
+                </p>
+              </div>
+            </AlertDescription>
+          </Alert>
+
+          <div className="flex items-center gap-2">
+            <Input
+              value={generatedCode}
+              readOnly
+              className="font-mono text-lg font-bold"
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleCopy}
+              className="flex-shrink-0"
+            >
+              {copied ? (
+                <Check className="h-4 w-4 text-green-600" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function UniversityDashboardPage() {
   const stats = [
@@ -255,6 +384,22 @@ export default function UniversityDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Generate Access Code Section */}
+      <Card className="border-[#009EE0]/30">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Award className="h-5 w-5 text-[#009EE0]" />
+            Générer un code d'accès administrateur
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Créez un code d'accès unique pour permettre à une nouvelle université de s'inscrire. Le code expire après une seule utilisation.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <GenerateAccessCode />
+        </CardContent>
+      </Card>
 
       {/* Quick Actions */}
       <Card>

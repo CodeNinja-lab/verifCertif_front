@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,11 +16,69 @@ export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
+
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Implement authentication logic
-    console.log("[v0] Login attempt:", { email, rememberMe })
+    setError(null)
+    setLoading(true)
+
+    fetch(`${apiBaseUrl}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const data = await res.json().catch(() => null)
+          throw new Error(data?.message || "Impossible de se connecter. Vérifiez vos identifiants.")
+        }
+        return res.json()
+      })
+      .then((data) => {
+        const token = data.token as string | undefined
+        const user = data.user as { role?: string } | undefined
+
+        if (token) {
+          if (typeof window !== "undefined") {
+            localStorage.setItem("auth_token", token)
+            if (rememberMe) {
+              localStorage.setItem("remember_me", "1")
+            } else {
+              localStorage.removeItem("remember_me")
+            }
+            if (user) {
+              localStorage.setItem("current_user", JSON.stringify(user))
+            }
+          }
+        }
+
+        const role = user?.role
+        if (role === "etudiant") {
+          router.push("/candidate")
+        } else if (role === "recruteur") {
+          router.push("/recruiter")
+        } else if (role === "admin") {
+          router.push("/university")
+        } else {
+          router.push("/")
+        }
+      })
+      .catch((err: Error) => {
+        setError(err.message)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   }
 
   return (
@@ -45,6 +104,7 @@ export default function LoginPage() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
+            {error && <p className="text-sm text-red-500">{error}</p>}
             {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email">Adresse email</Label>
@@ -110,8 +170,9 @@ export default function LoginPage() {
             <Button
               type="submit"
               className="w-full h-12 bg-gradient-to-r from-primary to-secondary hover:opacity-90 transition-opacity"
+              disabled={loading}
             >
-              Se connecter
+              {loading ? "Connexion en cours..." : "Se connecter"}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
 
