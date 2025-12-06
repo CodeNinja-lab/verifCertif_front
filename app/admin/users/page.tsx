@@ -58,7 +58,7 @@ export default function AdminUsersPage() {
                 },
                 {
                   name: "Thomas Dubois",
-                  email: "t.dubois@techcorp.com",
+                  email: "t.dubois@entreprise.sn",
                   role: "Recruteur",
                   status: "Actif",
                   date: "23 Nov 2023",

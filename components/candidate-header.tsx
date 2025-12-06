@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { Bell, Search, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,8 +13,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+// Import dynamique pour éviter le bundling côté serveur
 
 export function CandidateHeader() {
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    try {
+      const { authApi } = await import("@/lib/api-client")
+      await authApi.logout()
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion:", error)
+    } finally {
+      localStorage.removeItem("auth_token")
+      localStorage.removeItem("current_user")
+      router.push("/login")
+    }
+  }
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-16 items-center gap-4 px-6">
@@ -46,7 +62,7 @@ export function CandidateHeader() {
               <div className="text-xs text-muted-foreground">Il y a 2 heures</div>
             </DropdownMenuItem>
             <DropdownMenuItem className="flex flex-col items-start gap-1 p-3">
-              <div className="font-semibold">Message de TechCorp</div>
+              <div className="font-semibold">Nouveau message</div>
               <div className="text-xs text-muted-foreground">Votre candidature a été consultée</div>
               <div className="text-xs text-muted-foreground">Il y a 5 heures</div>
             </DropdownMenuItem>
@@ -73,7 +89,7 @@ export function CandidateHeader() {
             <DropdownMenuItem>Profil</DropdownMenuItem>
             <DropdownMenuItem>Paramètres</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Déconnexion</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>Déconnexion</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

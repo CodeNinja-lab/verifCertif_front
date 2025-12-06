@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import {
   LayoutDashboard,
@@ -16,6 +16,7 @@ import {
   FileText,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+// Import dynamique pour éviter le bundling côté serveur
 
 const navigation = [
   { name: "Vue d'ensemble", href: "/admin", icon: LayoutDashboard },
@@ -30,6 +31,20 @@ const navigation = [
 
 export function AdminSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    try {
+      const { authApi } = await import("@/lib/api-client")
+      await authApi.logout()
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion:", error)
+    } finally {
+      localStorage.removeItem("auth_token")
+      localStorage.removeItem("current_user")
+      router.push("/login")
+    }
+  }
 
   return (
     <div className="flex h-full flex-col gap-y-5 border-r border-border bg-card px-6 py-8">
@@ -73,7 +88,12 @@ export function AdminSidebar() {
             Opérationnel
           </div>
         </div>
-        <Button variant="outline" className="w-full justify-start gap-3 bg-transparent" size="sm">
+        <Button 
+          variant="outline" 
+          className="w-full justify-start gap-3 bg-transparent" 
+          size="sm"
+          onClick={handleLogout}
+        >
           <LogOut className="h-4 w-4" />
           Déconnexion
         </Button>

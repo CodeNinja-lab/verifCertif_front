@@ -9,7 +9,7 @@ const notifications = [
     type: "application",
     icon: Briefcase,
     title: "Candidature acceptée",
-    description: "TechCorp Solutions a accepté votre candidature pour Senior React Developer",
+    description: "Votre candidature a été acceptée pour Senior React Developer",
     time: "Il y a 5 minutes",
     unread: true,
   },

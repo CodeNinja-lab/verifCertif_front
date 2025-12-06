@@ -285,7 +285,7 @@ export default function AdminDashboardPage() {
                   <div className="ml-4 space-y-1">
                     <p className="text-sm font-medium leading-none">Nouvelle offre publiée</p>
                     <p className="text-xs text-muted-foreground">
-                      TechCorp Solutions a publié "Senior React Developer"
+                      Une nouvelle offre "Senior React Developer" a été publiée
                     </p>
                   </div>
                   <div className="ml-auto font-medium text-xs text-muted-foreground">Il y a 2 min</div>

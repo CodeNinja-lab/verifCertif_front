@@ -52,8 +52,8 @@ export default function AdminJobsPage() {
               {[
                 {
                   title: "Senior React Developer",
-                  company: "TechCorp",
-                  location: "Paris (Hybride)",
+                  company: "Entreprise Sénégal",
+                  location: "Dakar (Hybride)",
                   type: "CDI",
                   status: "Active",
                   applicants: 45,

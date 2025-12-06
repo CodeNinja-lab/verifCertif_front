@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,6 +19,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get("redirect")
 
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
 
@@ -51,6 +53,8 @@ export default function LoginPage() {
         if (token) {
           if (typeof window !== "undefined") {
             localStorage.setItem("auth_token", token)
+            // Stocker aussi dans un cookie pour le middleware
+            document.cookie = `auth_token=${token}; path=/; max-age=${rememberMe ? 2592000 : 86400}; SameSite=Lax`
             if (rememberMe) {
               localStorage.setItem("remember_me", "1")
             } else {
@@ -63,14 +67,20 @@ export default function LoginPage() {
         }
 
         const role = user?.role
-        if (role === "etudiant") {
-          router.push("/candidate")
-        } else if (role === "recruteur") {
-          router.push("/recruiter")
-        } else if (role === "admin") {
-          router.push("/university")
+        
+        // Rediriger vers la page demandée ou vers l'espace approprié selon le rôle
+        if (redirectTo && redirectTo.startsWith("/")) {
+          router.push(redirectTo)
         } else {
-          router.push("/")
+          if (role === "etudiant") {
+            router.push("/candidate")
+          } else if (role === "recruteur") {
+            router.push("/recruiter")
+          } else if (role === "admin" || role === "administration") {
+            router.push("/university")
+          } else {
+            router.push("/")
+          }
         }
       })
       .catch((err: Error) => {

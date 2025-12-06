@@ -52,6 +52,7 @@ export default function RecruiterSignupPage() {
         password: formData.password,
         password_confirmation: formData.confirmPassword,
         telephone: formData.phone,
+        nom_entreprise: formData.companyName,
         role: "recruteur",
         langue: "fr",
       }),
@@ -149,7 +150,7 @@ export default function RecruiterSignupPage() {
                 <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="companyName"
-                  placeholder="Tech Corp"
+                  placeholder="Ex: Entreprise Sénégal"
                   className="pl-9 h-11"
                   value={formData.companyName}
                   onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
@@ -181,7 +182,7 @@ export default function RecruiterSignupPage() {
                 <Input
                   id="phone"
                   type="tel"
-                  placeholder="+33 1 23 45 67 89"
+                  placeholder="+221 33 800 00 00"
                   className="pl-9 h-11"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}

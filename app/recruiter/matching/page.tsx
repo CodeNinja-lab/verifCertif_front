@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -22,66 +23,106 @@ import {
   Search,
   Filter,
 } from "lucide-react"
-
-const matchedCandidates = [
-  {
-    id: 1,
-    name: "Sophie Martin",
-    title: "Senior Full Stack Developer",
-    location: "Paris, France",
-    experience: "7 ans",
-    availability: "Disponible",
-    matchScore: 96,
-    skillsMatch: 9,
-    skillsTotal: 10,
-    email: "sophie.martin@email.com",
-    phone: "+33 6 12 34 56 78",
-    matchReasons: [
-      "7 ans d'expérience en développement",
-      "Expert React et Node.js",
-      "Localisation correspondante",
-      "Disponible immédiatement",
-    ],
-    skills: ["React", "Node.js", "TypeScript", "MongoDB", "AWS"],
-    salary: "60-75k",
-  },
-  {
-    id: 2,
-    name: "Thomas Dubois",
-    title: "Lead Developer React",
-    location: "Lyon, France",
-    experience: "5 ans",
-    availability: "Préavis 2 mois",
-    matchScore: 89,
-    skillsMatch: 8,
-    skillsTotal: 10,
-    email: "thomas.dubois@email.com",
-    phone: "+33 6 23 45 67 89",
-    matchReasons: ["Expertise React confirmée", "Expérience leadership", "Stack technique moderne"],
-    skills: ["React", "TypeScript", "Next.js", "PostgreSQL"],
-    salary: "55-70k",
-  },
-  {
-    id: 3,
-    name: "Marie Laurent",
-    title: "Full Stack Developer",
-    location: "Paris, France",
-    experience: "4 ans",
-    availability: "Disponible",
-    matchScore: 85,
-    skillsMatch: 8,
-    skillsTotal: 10,
-    email: "marie.laurent@email.com",
-    phone: "+33 6 34 56 78 90",
-    matchReasons: ["Compétences full stack solides", "Portfolio impressionnant", "Motivée et dynamique"],
-    skills: ["React", "Node.js", "GraphQL", "Docker"],
-    salary: "50-65k",
-  },
-]
+// Import dynamique pour éviter le bundling côté serveur
 
 export default function RecruiterMatchingPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const offreId = searchParams.get("offre")
   const [searchQuery, setSearchQuery] = useState("")
   const [filterPosition, setFilterPosition] = useState("all")
+  const [matchings, setMatchings] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [offre, setOffre] = useState<any>(null)
+
+  useEffect(() => {
+    if (offreId) {
+      loadMatchings()
+      loadOffre()
+    }
+  }, [offreId])
+
+  const loadOffre = async () => {
+    try {
+      const { offreApi } = await import("@/lib/api-client")
+      const data = await offreApi.get(offreId!)
+      setOffre(data.offre || data)
+    } catch (error) {
+      console.error("Erreur lors du chargement de l'offre:", error)
+    }
+  }
+
+  const loadMatchings = async () => {
+    try {
+      setLoading(true)
+      const { offreApi } = await import("@/lib/api-client")
+      const data = await offreApi.getMatchings(offreId!)
+      setMatchings(data.data || data || [])
+    } catch (error) {
+      console.error("Erreur lors du chargement des matchings:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleContact = async (matching: any) => {
+    try {
+      const { messageApi } = await import("@/lib/api-client")
+      // Créer ou obtenir la conversation
+      const data = await messageApi.getOrCreateConversation(
+        matching.etudiant_id,
+        offreId ? parseInt(offreId) : undefined
+      )
+      // Rediriger vers la page messages
+      router.push(`/recruiter/messages?conversation=${data.conversation.id}`)
+    } catch (error) {
+      console.error("Erreur lors de la création de la conversation:", error)
+    }
+  }
+
+  if (!offreId) {
+    return (
+      <div className="space-y-6 p-6">
+        <div className="text-center text-muted-foreground">
+          Veuillez sélectionner une offre pour voir les candidats recommandés
+        </div>
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6 p-6">
+        <div className="text-center">Chargement...</div>
+      </div>
+    )
+  }
+
+  const filteredMatchings = matchings.filter((matching: any) => {
+    if (searchQuery) {
+      const name = matching.etudiant?.name || ""
+      return name.toLowerCase().includes(searchQuery.toLowerCase())
+    }
+    return true
+  })
+
+  const matchedCandidates = filteredMatchings.map((matching: any) => ({
+    id: matching.id,
+    name: matching.etudiant?.name || "Candidat",
+    title: matching.etudiant?.profilEtudiant?.titre_profil || "",
+    location: matching.etudiant?.profilEtudiant?.localisation || "",
+    experience: matching.etudiant?.profilEtudiant?.annees_experience || 0,
+    availability: "Disponible",
+    matchScore: Math.round(matching.score_global || 0),
+    skillsMatch: matching.competences_matchees?.length || 0,
+    skillsTotal: (matching.competences_matchees?.length || 0) + (matching.competences_manquantes?.length || 0),
+    email: matching.etudiant?.email || "",
+    phone: "",
+    matchReasons: matching.points_forts || [],
+    skills: matching.competences_matchees || [],
+    salary: "",
+    matching: matching,
+  }))
 
   return (
     <div className="space-y-6 p-6">
@@ -92,7 +133,7 @@ export default function RecruiterMatchingPage() {
             Candidats recommandés
           </h1>
           <p className="text-muted-foreground">
-            Les meilleurs candidats pour votre poste de Développeur Full Stack Senior
+            Les meilleurs candidats pour votre poste: {offre?.titre || "Offre"}
           </p>
         </div>
         <Button className="bg-gradient-to-r from-secondary to-green-600 hover:opacity-90">
@@ -117,10 +158,10 @@ export default function RecruiterMatchingPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Match moyen</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-secondary">90%</div>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-              <TrendingUp className="h-3 w-3 text-green-500" />
-              <span className="text-green-500 font-medium">+5%</span>
+            <div className="text-2xl font-bold text-secondary">
+              {matchedCandidates.length > 0 
+                ? Math.round(matchedCandidates.reduce((acc: number, c: any) => acc + c.matchScore, 0) / matchedCandidates.length)
+                : 0}%
             </div>
           </CardContent>
         </Card>
@@ -130,18 +171,22 @@ export default function RecruiterMatchingPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Disponibles</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2</div>
+            <div className="text-2xl font-bold">
+              {matchedCandidates.filter((c: any) => c.availability === "Disponible").length}
+            </div>
             <p className="text-xs text-muted-foreground mt-1">Immédiatement</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Contactés</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Vus</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground mt-1">Ce mois-ci</p>
+            <div className="text-2xl font-bold">
+              {matchings.filter((m: any) => m.vu_par_recruteur).length}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Candidats consultés</p>
           </CardContent>
         </Card>
       </div>
@@ -176,7 +221,14 @@ export default function RecruiterMatchingPage() {
       </Card>
 
       <div className="space-y-4">
-        {matchedCandidates.map((candidate) => (
+        {matchedCandidates.length === 0 ? (
+          <Card>
+            <CardContent className="p-6 text-center text-muted-foreground">
+              Aucun candidat matché pour cette offre
+            </CardContent>
+          </Card>
+        ) : (
+          matchedCandidates.map((candidate) => (
           <Card key={candidate.id} className="hover:shadow-lg transition-all border-2 hover:border-secondary/50">
             <CardContent className="p-6">
               <div className="flex items-start gap-6">
@@ -261,7 +313,10 @@ export default function RecruiterMatchingPage() {
                   </div>
 
                   <div className="flex gap-2 pt-2">
-                    <Button className="flex-1 bg-gradient-to-r from-secondary to-green-600 hover:opacity-90">
+                    <Button 
+                      className="flex-1 bg-gradient-to-r from-secondary to-green-600 hover:opacity-90"
+                      onClick={() => handleContact(candidate.matching)}
+                    >
                       <Mail className="mr-2 h-4 w-4" />
                       Contacter
                     </Button>
@@ -278,7 +333,8 @@ export default function RecruiterMatchingPage() {
               </div>
             </CardContent>
           </Card>
-        ))}
+          ))
+        )}
       </div>
     </div>
   )

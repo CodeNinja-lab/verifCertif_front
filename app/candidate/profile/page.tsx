@@ -80,14 +80,14 @@ export default function CandidateProfile() {
             <Label htmlFor="phone">Téléphone</Label>
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input id="phone" defaultValue="+33 6 12 34 56 78" className="pl-10" />
+              <Input id="phone" defaultValue="+221 77 123 45 67" className="pl-10" />
             </div>
           </div>
           <div className="space-y-2 md:col-span-2">
             <Label htmlFor="location">Localisation</Label>
             <div className="relative">
               <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input id="location" defaultValue="Paris, France" className="pl-10" />
+              <Input id="location" defaultValue="Dakar, Sénégal" className="pl-10" />
             </div>
           </div>
         </div>
@@ -169,7 +169,7 @@ export default function CandidateProfile() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="salary">Salaire souhaité (annuel)</Label>
-            <Input id="salary" defaultValue="55 000 - 70 000 €" />
+            <Input id="salary" defaultValue="800 000 - 1 000 000 FCFA" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="availability">Disponibilité</Label>

@@ -174,7 +174,7 @@ export default function CandidateSignupPage() {
                 <Input
                   id="phone"
                   type="tel"
-                  placeholder="+33 6 12 34 56 78"
+                  placeholder="+221 77 123 45 67"
                   className="pl-9 h-11"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}

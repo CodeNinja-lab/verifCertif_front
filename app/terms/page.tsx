@@ -76,8 +76,8 @@ export default function TermsPage() {
 
               <h2>9. Droit applicable</h2>
               <p>
-                Ces conditions sont régies par le droit français. Tout litige sera soumis à la juridiction exclusive des
-                tribunaux de Paris.
+                Ces conditions sont régies par le droit sénégalais. Tout litige sera soumis à la juridiction exclusive des
+                tribunaux de Dakar.
               </p>
 
               <h2>10. Contact</h2>

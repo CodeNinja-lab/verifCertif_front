@@ -12,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 const conversations = [
   {
     id: 1,
-    company: "TechCorp Solutions",
+    company: "Entreprise Sénégal",
     recruiter: "Sophie Martin",
     avatar: "/placeholder.svg?height=40&width=40",
     lastMessage: "Nous aimerions vous rencontrer pour un entretien",

@@ -1,3 +1,6 @@
+"use client"
+
+import { useRouter } from "next/navigation"
 import { Bell, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,8 +13,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+// Import dynamique pour éviter le bundling côté serveur
 
 export function AdminHeader() {
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    try {
+      const { authApi } = await import("@/lib/api-client")
+      await authApi.logout()
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion:", error)
+    } finally {
+      localStorage.removeItem("auth_token")
+      localStorage.removeItem("current_user")
+      router.push("/login")
+    }
+  }
   return (
     <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-border bg-background/80 px-6 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
       <div className="flex w-full max-w-sm items-center gap-2">
@@ -50,7 +68,7 @@ export function AdminHeader() {
             <DropdownMenuItem>Paramètres</DropdownMenuItem>
             <DropdownMenuItem>Sécurité</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">Se déconnecter</DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive" onClick={handleLogout}>Se déconnecter</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

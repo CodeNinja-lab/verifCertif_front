@@ -15,18 +15,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export default function JobsPage() {
   const [showFilters, setShowFilters] = useState(true)
-  const [salaryRange, setSalaryRange] = useState([30, 100])
+  const [salaryRange, setSalaryRange] = useState([300, 1000])
 
   const jobs = [
     {
       id: 1,
       title: "Développeur Full-Stack Senior",
-      company: "TechCorp Innovation",
+      company: "Entreprise Sénégal",
       logo: "🚀",
-      location: "Paris, France",
+      location: "Dakar, Sénégal",
       type: "CDI",
       remote: "Hybride",
-      salary: "60-75K€",
+      salary: "800k-1.2M FCFA",
       posted: "2 jours",
       featured: true,
       urgent: false,
@@ -39,10 +39,10 @@ export default function JobsPage() {
       title: "Lead Frontend Developer",
       company: "Digital Solutions",
       logo: "💡",
-      location: "Lyon, France",
+      location: "Thiès, Sénégal",
       type: "CDI",
       remote: "Full Remote",
-      salary: "55-70K€",
+      salary: "700k-1M FCFA",
       posted: "1 semaine",
       featured: false,
       urgent: true,
@@ -58,7 +58,7 @@ export default function JobsPage() {
       location: "Remote",
       type: "CDI",
       remote: "Full Remote",
-      salary: "70-90K€",
+      salary: "1M-1.5M FCFA",
       posted: "3 jours",
       featured: true,
       urgent: false,
@@ -71,10 +71,10 @@ export default function JobsPage() {
       title: "Data Scientist Senior",
       company: "DataFlow Analytics",
       logo: "📊",
-      location: "Paris, France",
+      location: "Dakar, Sénégal",
       type: "CDI",
       remote: "Hybride",
-      salary: "65-85K€",
+      salary: "900k-1.3M FCFA",
       posted: "5 jours",
       featured: false,
       urgent: false,
@@ -87,10 +87,10 @@ export default function JobsPage() {
       title: "Product Manager",
       company: "InnovateLab",
       logo: "🎯",
-      location: "Bordeaux, France",
+      location: "Saint-Louis, Sénégal",
       type: "CDI",
       remote: "Présentiel",
-      salary: "50-65K€",
+      salary: "600k-900k FCFA",
       posted: "1 semaine",
       featured: false,
       urgent: false,
@@ -103,10 +103,10 @@ export default function JobsPage() {
       title: "DevOps Engineer",
       company: "StartupHub",
       logo: "⚙️",
-      location: "Nantes, France",
+      location: "Ziguinchor, Sénégal",
       type: "CDI",
       remote: "Hybride",
-      salary: "45-60K€",
+      salary: "500k-800k FCFA",
       posted: "4 jours",
       featured: false,
       urgent: true,
@@ -213,19 +213,19 @@ export default function JobsPage() {
 
                   {/* Salary Range */}
                   <div className="pt-4 border-t">
-                    <h3 className="font-semibold mb-3">Salaire annuel</h3>
+                    <h3 className="font-semibold mb-3">Salaire mensuel (FCFA)</h3>
                     <div className="space-y-4">
                       <Slider
                         value={salaryRange}
                         onValueChange={setSalaryRange}
-                        min={20}
-                        max={150}
-                        step={5}
+                        min={200}
+                        max={2000}
+                        step={50}
                         className="mb-2"
                       />
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">{salaryRange[0]}K€</span>
-                        <span className="text-muted-foreground">{salaryRange[1]}K€</span>
+                        <span className="text-muted-foreground">{salaryRange[0]}k FCFA</span>
+                        <span className="text-muted-foreground">{salaryRange[1]}k FCFA</span>
                       </div>
                     </div>
                   </div>

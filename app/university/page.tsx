@@ -208,7 +208,7 @@ export default function UniversityDashboardPage() {
   const recentVerifications = [
     {
       id: 1,
-      company: "Tech Corp",
+      company: "Entreprise Sénégal",
       student: "Sophie Martin",
       date: "Il y a 2 heures",
       status: "verified",

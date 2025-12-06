@@ -47,7 +47,7 @@ export default function CandidateApplications() {
       position: "Architecte Solutions Cloud",
       company: "CloudFirst",
       location: "Remote",
-      salary: "70-90K€",
+      salary: "1M-1.5M FCFA",
       appliedDate: "10 Jan 2025",
       status: "applied",
       statusLabel: "Candidature envoyée",

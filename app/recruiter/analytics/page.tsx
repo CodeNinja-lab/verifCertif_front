@@ -1,3 +1,6 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AreaChartComponent } from "@/components/charts/area-chart-component"
 import { LineChartComponent } from "@/components/charts/line-chart-component"
@@ -5,42 +8,102 @@ import { BarChartComponent } from "@/components/charts/bar-chart-component"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar, TrendingUp, TrendingDown } from "lucide-react"
+// Import dynamique pour éviter le bundling côté serveur
 
 export default function RecruiterAnalyticsPage() {
-  const applicationsOverTimeData = [
-    { name: "Sem 1", value: 45 },
-    { name: "Sem 2", value: 62 },
-    { name: "Sem 3", value: 78 },
-    { name: "Sem 4", value: 95 },
-    { name: "Sem 5", value: 112 },
-    { name: "Sem 6", value: 134 },
-  ]
+  const [stats, setStats] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [periode, setPeriode] = useState("30days")
 
-  const viewsVsApplicationsData = [
-    { name: "Jan", vues: 1200, candidatures: 48 },
-    { name: "Fév", vues: 1450, candidatures: 62 },
-    { name: "Mar", vues: 1680, candidatures: 78 },
-    { name: "Avr", vues: 1890, candidatures: 95 },
-    { name: "Mai", vues: 2100, candidatures: 112 },
-    { name: "Juin", vues: 2340, candidatures: 134 },
-  ]
+  useEffect(() => {
+    loadStats()
+  }, [periode])
 
-  const topSkillsData = [
-    { name: "React", value: 145 },
-    { name: "Node.js", value: 128 },
-    { name: "TypeScript", value: 112 },
-    { name: "Python", value: 98 },
-    { name: "AWS", value: 87 },
-    { name: "Docker", value: 76 },
-  ]
+  const loadStats = async () => {
+    try {
+      setLoading(true)
+      const { recruiterStatsApi } = await import("@/lib/api-client")
+      const [dashboard, offres, candidates] = await Promise.all([
+        recruiterStatsApi.dashboard({ periode: periode === "30days" ? 30 : periode === "7days" ? 7 : 90 }),
+        recruiterStatsApi.offres({ periode: periode === "30days" ? 30 : periode === "7days" ? 7 : 90 }),
+        recruiterStatsApi.candidates(),
+      ])
+      setStats({ dashboard, offres, candidates })
+    } catch (error) {
+      console.error("Erreur lors du chargement des statistiques:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="text-center">Chargement...</div>
+      </div>
+    )
+  }
+  // Préparer les données pour les graphiques
+  const applicationsOverTimeData = stats?.offres?.evolution?.map((item: any, index: number) => {
+    const date = item.date ? new Date(item.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : `J${index + 1}`
+    return {
+      name: date,
+      value: item.candidatures || item.total || 0,
+    }
+  }) || []
+
+  // Si pas de données, créer un graphique vide avec un message
+  if (applicationsOverTimeData.length === 0) {
+    applicationsOverTimeData.push({ name: "Aucune donnée", value: 0 })
+  }
+
+  // Graphique Vues vs Candidatures par date
+  const viewsVsApplicationsData = stats?.offres?.evolution?.map((item: any, index: number) => {
+    const date = item.date ? new Date(item.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : `J${index + 1}`
+    return {
+      name: date,
+      vues: item.total_vues || 0,
+      candidatures: item.candidatures || item.total || 0,
+    }
+  }) || []
+
+  // Si pas de données d'évolution, utiliser les top offres comme alternative
+  if (viewsVsApplicationsData.length === 0 && stats?.offres?.top_offres) {
+    const topOffresData = stats.offres.top_offres.slice(0, 10).map((offre: any, index: number) => ({
+      name: offre.titre?.substring(0, 15) + (offre.titre?.length > 15 ? '...' : '') || `Offre ${index + 1}`,
+      vues: offre.vues || 0,
+      candidatures: offre.candidatures || 0,
+    }))
+    viewsVsApplicationsData.push(...topOffresData)
+  }
+
+  if (viewsVsApplicationsData.length === 0) {
+    viewsVsApplicationsData.push({ name: "Aucune donnée", vues: 0, candidatures: 0 })
+  }
+
+  const topSkillsData = stats?.candidates?.top_skills?.map((skill: any) => ({
+    name: skill.nom || skill.name || "Inconnu",
+    value: skill.total || skill.value || 0,
+  })) || []
+
+  if (topSkillsData.length === 0) {
+    topSkillsData.push({ name: "Aucune compétence", value: 0 })
+  }
 
   const sourceData = [
-    { name: "LinkedIn", value: 340 },
-    { name: "Site carrière", value: 256 },
-    { name: "Indeed", value: 178 },
-    { name: "Recommandations", value: 145 },
-    { name: "Glassdoor", value: 89 },
+    { name: "Matching IA", value: stats?.dashboard?.candidatures_total || 0 },
+    { name: "Candidatures directes", value: 0 },
   ]
+
+  // Statistiques d'expérience dynamiques
+  const experienceStats = stats?.candidates?.experience_percentages || {
+    junior: 0,
+    intermediaire: 0,
+    senior: 0,
+  }
+
+  // Statistiques de localisation dynamiques
+  const localisationStats = stats?.candidates?.localisation_stats || []
 
   return (
     <div className="p-6 space-y-6">
@@ -49,7 +112,7 @@ export default function RecruiterAnalyticsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Analytics Avancés</h1>
           <p className="text-muted-foreground">Analysez vos performances de recrutement en détail</p>
         </div>
-        <Select defaultValue="30days">
+        <Select value={periode} onValueChange={setPeriode}>
           <SelectTrigger className="w-[180px]">
             <Calendar className="mr-2 h-4 w-4" />
             <SelectValue />
@@ -58,7 +121,6 @@ export default function RecruiterAnalyticsPage() {
             <SelectItem value="7days">7 derniers jours</SelectItem>
             <SelectItem value="30days">30 derniers jours</SelectItem>
             <SelectItem value="90days">90 derniers jours</SelectItem>
-            <SelectItem value="year">Cette année</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -69,11 +131,11 @@ export default function RecruiterAnalyticsPage() {
             <CardTitle className="text-sm font-medium">Taux de Conversion</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">5.7%</div>
-            <p className="text-xs text-emerald-500 flex items-center">
-              <TrendingUp className="mr-1 h-3 w-3" />
-              +0.8% ce mois
-            </p>
+            <div className="text-2xl font-bold">
+              {stats?.dashboard?.vues_total > 0 
+                ? ((stats.dashboard.candidatures_total / stats.dashboard.vues_total) * 100).toFixed(1)
+                : 0}%
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -81,35 +143,23 @@ export default function RecruiterAnalyticsPage() {
             <CardTitle className="text-sm font-medium">Temps de Réponse</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3.2j</div>
-            <p className="text-xs text-emerald-500 flex items-center">
-              <TrendingDown className="mr-1 h-3 w-3" />
-              -0.5j ce mois
-            </p>
+            <div className="text-2xl font-bold">{stats?.dashboard?.performance?.delai_moyen || 0}j</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Qualité Candidats</CardTitle>
+            <CardTitle className="text-sm font-medium">Score Moyen</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">8.4/10</div>
-            <p className="text-xs text-emerald-500 flex items-center">
-              <TrendingUp className="mr-1 h-3 w-3" />
-              +0.3 ce mois
-            </p>
+            <div className="text-2xl font-bold">{stats?.candidates?.score_moyen || 0}/100</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Coût par Embauche</CardTitle>
+            <CardTitle className="text-sm font-medium">Candidats avec Intérêt</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,240€</div>
-            <p className="text-xs text-emerald-500 flex items-center">
-              <TrendingDown className="mr-1 h-3 w-3" />
-              -180€ ce mois
-            </p>
+            <div className="text-2xl font-bold">{stats?.candidates?.avec_interet || 0}</div>
           </CardContent>
         </Card>
       </div>
@@ -125,20 +175,27 @@ export default function RecruiterAnalyticsPage() {
         <TabsContent value="performance" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
-              <CardHeader>
-                <CardTitle>Candidatures Reçues</CardTitle>
-                <CardDescription>Évolution hebdomadaire</CardDescription>
-              </CardHeader>
-              <CardContent className="h-[300px]">
+            <CardHeader>
+              <CardTitle>Candidatures Reçues</CardTitle>
+              <CardDescription>Évolution sur la période sélectionnée</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[300px]">
+              {applicationsOverTimeData.length > 0 && applicationsOverTimeData[0].value > 0 ? (
                 <AreaChartComponent data={applicationsOverTimeData} color="#3b82f6" />
-              </CardContent>
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  Aucune donnée disponible pour cette période
+                </div>
+              )}
+            </CardContent>
             </Card>
             <Card>
-              <CardHeader>
-                <CardTitle>Vues vs Candidatures</CardTitle>
-                <CardDescription>Comparaison mensuelle</CardDescription>
-              </CardHeader>
-              <CardContent className="h-[300px]">
+            <CardHeader>
+              <CardTitle>Vues vs Candidatures</CardTitle>
+              <CardDescription>Par offre (top 10)</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[300px]">
+              {viewsVsApplicationsData.length > 0 && (viewsVsApplicationsData[0].vues > 0 || viewsVsApplicationsData[0].candidatures > 0) ? (
                 <LineChartComponent
                   data={viewsVsApplicationsData}
                   lines={[
@@ -146,7 +203,12 @@ export default function RecruiterAnalyticsPage() {
                     { key: "candidatures", color: "#10b981", label: "Candidatures" },
                   ]}
                 />
-              </CardContent>
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  Aucune donnée disponible
+                </div>
+              )}
+            </CardContent>
             </Card>
           </div>
         </TabsContent>
@@ -163,51 +225,44 @@ export default function RecruiterAnalyticsPage() {
                   <h4 className="font-semibold">Niveau d'Expérience</h4>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span>Junior</span>
-                      <span className="font-medium">28%</span>
+                      <span>Junior (0-2 ans)</span>
+                      <span className="font-medium">{experienceStats.junior || 0}%</span>
                     </div>
                     <div className="h-2 rounded-full bg-muted overflow-hidden">
-                      <div className="h-full bg-primary w-[28%]" />
+                      <div className="h-full bg-primary" style={{ width: `${experienceStats.junior || 0}%` }} />
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span>Intermédiaire</span>
-                      <span className="font-medium">45%</span>
+                      <span>Intermédiaire (3-5 ans)</span>
+                      <span className="font-medium">{experienceStats.intermediaire || 0}%</span>
                     </div>
                     <div className="h-2 rounded-full bg-muted overflow-hidden">
-                      <div className="h-full bg-secondary w-[45%]" />
+                      <div className="h-full bg-secondary" style={{ width: `${experienceStats.intermediaire || 0}%` }} />
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span>Senior</span>
-                      <span className="font-medium">27%</span>
+                      <span>Senior (5+ ans)</span>
+                      <span className="font-medium">{experienceStats.senior || 0}%</span>
                     </div>
                     <div className="h-2 rounded-full bg-muted overflow-hidden">
-                      <div className="h-full bg-emerald-500 w-[27%]" />
+                      <div className="h-full bg-emerald-500" style={{ width: `${experienceStats.senior || 0}%` }} />
                     </div>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <h4 className="font-semibold">Localisation</h4>
                   <div className="space-y-3 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span>Île-de-France</span>
-                      <span className="font-medium">42%</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Auvergne-Rhône-Alpes</span>
-                      <span className="font-medium">18%</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Occitanie</span>
-                      <span className="font-medium">12%</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Nouvelle-Aquitaine</span>
-                      <span className="font-medium">11%</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Autres</span>
-                      <span className="font-medium">17%</span>
-                    </div>
+                    {localisationStats.length > 0 ? (
+                      localisationStats.map((loc: any, index: number) => (
+                        <div key={index} className="flex items-center justify-between">
+                          <span className="truncate">{loc.localisation || loc.name || "Inconnu"}</span>
+                          <span className="font-medium">{loc.percentage || loc.count || 0}%</span>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-muted-foreground text-sm">Aucune donnée disponible</div>
+                    )}
+                    {localisationStats.length === 0 && (
+                      <div className="text-muted-foreground text-sm">Aucune localisation renseignée</div>
+                    )}
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -215,20 +270,21 @@ export default function RecruiterAnalyticsPage() {
                   <div className="space-y-3 text-sm">
                     <div className="flex items-center justify-between">
                       <span>Immédiate</span>
-                      <span className="font-medium">34%</span>
+                      <span className="font-medium">-</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>1 mois</span>
-                      <span className="font-medium">42%</span>
+                      <span className="font-medium">-</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>2 mois</span>
-                      <span className="font-medium">18%</span>
+                      <span className="font-medium">-</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>3+ mois</span>
-                      <span className="font-medium">6%</span>
+                      <span className="font-medium">-</span>
                     </div>
+                    <p className="text-xs text-muted-foreground mt-2">Données non disponibles</p>
                   </div>
                 </div>
               </div>
@@ -243,7 +299,13 @@ export default function RecruiterAnalyticsPage() {
               <CardDescription>Top compétences présentes dans vos candidatures</CardDescription>
             </CardHeader>
             <CardContent className="h-[400px]">
-              <BarChartComponent data={topSkillsData} color="#8b5cf6" />
+              {topSkillsData.length > 0 && topSkillsData[0].value > 0 ? (
+                <BarChartComponent data={topSkillsData} color="#8b5cf6" />
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  Aucune compétence disponible
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

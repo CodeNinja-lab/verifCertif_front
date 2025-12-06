@@ -1,3 +1,6 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -6,12 +9,46 @@ import { Users, Eye, Send, CheckCircle2, TrendingUp, Briefcase, Target, ArrowRig
 import Link from "next/link"
 
 export default function RecruiterDashboard() {
+  const [stats, setStats] = useState<any>(null)
+  const [offres, setOffres] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
+    try {
+      setLoading(true)
+      // Import dynamique pour éviter le bundling côté serveur
+      const { recruiterStatsApi, offreApi } = await import("@/lib/api-client")
+      const [dashboardStats, offresData] = await Promise.all([
+        recruiterStatsApi.dashboard(),
+        offreApi.list({ my_offres: true, statut: "PUBLIEE", per_page: 3 }),
+      ])
+      setStats(dashboardStats)
+      setOffres(offresData.data || [])
+    } catch (error: any) {
+      console.error("Erreur lors du chargement des données:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="text-center">Chargement...</div>
+      </div>
+    )
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Tableau de bord</h1>
-          <p className="text-muted-foreground mt-1">Bienvenue chez TechCorp Innovation</p>
+          <p className="text-muted-foreground mt-1">Bienvenue sur votre tableau de bord</p>
         </div>
         <Button className="bg-gradient-to-r from-secondary to-primary" asChild>
           <Link href="/recruiter/jobs/new">Publier une nouvelle offre</Link>
@@ -29,7 +66,7 @@ export default function RecruiterDashboard() {
               +3 ce mois
             </Badge>
           </div>
-          <div className="text-2xl font-bold">12</div>
+          <div className="text-2xl font-bold">{stats?.offres_actives || 0}</div>
           <p className="text-sm text-muted-foreground">Offres actives</p>
         </Card>
 
@@ -42,8 +79,13 @@ export default function RecruiterDashboard() {
               +28%
             </Badge>
           </div>
-          <div className="text-2xl font-bold">847</div>
+          <div className="text-2xl font-bold">{stats?.candidatures_total || 0}</div>
           <p className="text-sm text-muted-foreground">Candidatures reçues</p>
+          {stats?.candidatures_ce_mois > 0 && (
+            <Badge variant="secondary" className="text-xs mt-1">
+              +{stats.candidatures_ce_mois} ce mois
+            </Badge>
+          )}
         </Card>
 
         <Card className="p-6">
@@ -55,7 +97,7 @@ export default function RecruiterDashboard() {
               +15%
             </Badge>
           </div>
-          <div className="text-2xl font-bold">12.4K</div>
+          <div className="text-2xl font-bold">{stats?.vues_total || 0}</div>
           <p className="text-sm text-muted-foreground">Vues profil</p>
         </Card>
 
@@ -68,7 +110,7 @@ export default function RecruiterDashboard() {
               8 ce mois
             </Badge>
           </div>
-          <div className="text-2xl font-bold">34</div>
+          <div className="text-2xl font-bold">{stats?.recrutements_reussis || 0}</div>
           <p className="text-sm text-muted-foreground">Recrutements réussis</p>
         </Card>
       </div>
@@ -86,49 +128,27 @@ export default function RecruiterDashboard() {
             </Button>
           </div>
 
-          {[
-            {
-              title: "Développeur Full-Stack Senior",
-              posted: "2 jours",
-              applications: 42,
-              views: 847,
-              newApplications: 8,
-              status: "active",
-              progress: 75,
-            },
-            {
-              title: "Data Scientist",
-              posted: "1 semaine",
-              applications: 28,
-              views: 623,
-              newApplications: 3,
-              status: "active",
-              progress: 60,
-            },
-            {
-              title: "Product Manager",
-              posted: "3 jours",
-              applications: 35,
-              views: 712,
-              newApplications: 12,
-              status: "urgent",
-              progress: 45,
-            },
-          ].map((job, idx) => (
-            <Card key={idx} className="p-6 hover:shadow-lg transition-all">
+          {offres.length === 0 ? (
+            <Card className="p-6 text-center text-muted-foreground">
+              Aucune offre active pour le moment
+            </Card>
+          ) : (
+            offres.map((job: any, idx: number) => {
+              const progress = job.matchings_count > 0 ? Math.min((job.matchings_count / 50) * 100, 100) : 0
+              return (
+            <Card key={job.id || idx} className="p-6 hover:shadow-lg transition-all">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-lg">{job.title}</h3>
-                    {job.status === "urgent" && (
-                      <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-xs">Urgent</Badge>
-                    )}
+                    <h3 className="font-semibold text-lg">{job.titre}</h3>
                   </div>
-                  <p className="text-sm text-muted-foreground">Publié il y a {job.posted}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {job.date_publication || "Non publiée"}
+                  </p>
                 </div>
-                {job.newApplications > 0 && (
+                {job.nouvelles_candidatures > 0 && (
                   <Badge className="bg-primary/10 text-primary border-primary/20">
-                    {job.newApplications} nouvelles
+                    {job.nouvelles_candidatures} nouvelles
                   </Badge>
                 )}
               </div>
@@ -137,33 +157,35 @@ export default function RecruiterDashboard() {
                 <div className="flex items-center gap-2 text-sm">
                   <Send className="h-4 w-4 text-muted-foreground" />
                   <span className="text-muted-foreground">Candidatures:</span>
-                  <span className="font-semibold">{job.applications}</span>
+                  <span className="font-semibold">{job.matchings_count || 0}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Eye className="h-4 w-4 text-muted-foreground" />
                   <span className="text-muted-foreground">Vues:</span>
-                  <span className="font-semibold">{job.views}</span>
+                  <span className="font-semibold">{job.nombre_vues || 0}</span>
                 </div>
               </div>
 
               <div className="space-y-2 mb-4">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Taux de complétion</span>
-                  <span className="font-semibold">{job.progress}%</span>
+                  <span className="font-semibold">{Math.round(progress)}%</span>
                 </div>
-                <Progress value={job.progress} className="h-2" />
+                <Progress value={progress} className="h-2" />
               </div>
 
               <div className="flex gap-2">
                 <Button size="sm" variant="outline" asChild>
-                  <Link href={`/recruiter/jobs/${idx + 1}`}>Voir les candidatures</Link>
+                  <Link href={`/recruiter/matching?offre=${job.id}`}>Voir les candidatures</Link>
                 </Button>
                 <Button size="sm" variant="outline" asChild>
-                  <Link href={`/jobs/${idx + 1}`}>Voir l'offre</Link>
+                  <Link href={`/jobs/${job.id}`}>Voir l'offre</Link>
                 </Button>
               </div>
             </Card>
-          ))}
+              )
+            })
+          )}
         </div>
 
         {/* Recent Applications & Quick Actions */}
@@ -171,34 +193,34 @@ export default function RecruiterDashboard() {
           <Card className="p-6">
             <h3 className="font-semibold mb-4">Candidatures récentes</h3>
             <div className="space-y-3">
-              {[
-                { name: "Marie Dubois", position: "Full-Stack Senior", match: 95, time: "10 min" },
-                { name: "Pierre Martin", position: "Data Scientist", match: 88, time: "1h" },
-                { name: "Sophie Laurent", position: "Product Manager", match: 92, time: "2h" },
-              ].map((app, idx) => (
+              {stats?.candidatures_recentes && stats.candidatures_recentes.length > 0 ? (
+                stats.candidatures_recentes.map((app: any, idx: number) => (
                 <div
-                  key={idx}
+                  key={app.id || idx}
                   className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent transition-colors cursor-pointer"
                 >
                   <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground font-semibold text-sm">
-                    {app.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
+                    {app.candidat?.name
+                      ?.split(" ")
+                      .map((n: string) => n[0])
+                      .join("") || "?"}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                      <h4 className="font-medium text-sm truncate">{app.name}</h4>
+                      <h4 className="font-medium text-sm truncate">{app.candidat?.name || "Candidat"}</h4>
                       <Badge variant="secondary" className="text-xs">
                         <Target className="mr-1 h-3 w-3" />
-                        {app.match}%
+                        {Math.round(app.match_score || 0)}%
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground truncate">{app.position}</p>
-                    <p className="text-xs text-muted-foreground">Il y a {app.time}</p>
+                    <p className="text-xs text-muted-foreground truncate">{app.offre?.titre || ""}</p>
+                    <p className="text-xs text-muted-foreground">{app.date || ""}</p>
                   </div>
                 </div>
-              ))}
+              ))
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">Aucune candidature récente</p>
+              )}
             </div>
             <Button variant="outline" className="w-full mt-4 bg-transparent" asChild>
               <Link href="/recruiter/candidates">Voir tous les candidats</Link>
@@ -215,11 +237,11 @@ export default function RecruiterDashboard() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Taux de réponse</span>
-                <span className="font-semibold text-secondary">78%</span>
+                <span className="font-semibold text-secondary">{stats?.performance?.taux_reponse || 0}%</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Délai moyen</span>
-                <span className="font-semibold">3.2 jours</span>
+                <span className="font-semibold">{stats?.performance?.delai_moyen || 0} jours</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Satisfaction</span>

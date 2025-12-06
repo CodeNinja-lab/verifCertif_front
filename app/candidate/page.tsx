@@ -147,7 +147,7 @@ export default function CandidateDashboard() {
               company: "CloudFirst",
               location: "Remote",
               type: "CDI",
-              salary: "70-90K€",
+              salary: "1M-1.5M FCFA",
               match: 88,
               posted: "3 jours",
               skills: ["AWS", "Kubernetes", "DevOps"],
