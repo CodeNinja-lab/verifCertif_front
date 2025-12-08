@@ -98,7 +98,7 @@ export default function RecruiterSignupPage() {
               <Briefcase className="h-7 w-7 text-primary-foreground" />
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              TalentHub Pro
+              ACADYS
             </span>
           </Link>
 

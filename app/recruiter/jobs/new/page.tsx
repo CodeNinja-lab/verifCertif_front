@@ -46,8 +46,18 @@ export default function NewJobPage() {
   const [newProcessStep, setNewProcessStep] = useState({ title: "", duration: "" })
   const [generatingAI, setGeneratingAI] = useState<string | null>(null)
 
+  const getSavedCompanyInfo = () => {
+    if (typeof window === "undefined") return {}
+    try {
+      return JSON.parse(localStorage.getItem("company_info") || "{}")
+    } catch {
+      return {}
+    }
+  }
+
   useEffect(() => {
     loadCompetences()
+    prefillCompanyInfo()
   }, [])
 
   const loadCompetences = async () => {
@@ -57,6 +67,36 @@ export default function NewJobPage() {
       setCompetences(data.data || data || [])
     } catch (error) {
       console.error("Erreur lors du chargement des compétences:", error)
+    }
+  }
+
+  const prefillCompanyInfo = async () => {
+    try {
+      const { authApi, offreApi } = await import("@/lib/api-client")
+      const [userData, offresData] = await Promise.all([
+        authApi.me(),
+        offreApi.list({ my_offres: true, per_page: 10 }),
+      ])
+
+      const userInfo = userData.user || userData
+      const savedInfo = getSavedCompanyInfo()
+      const offresList = offresData?.data || []
+      const firstOffre = offresList[0]
+
+      const defaults = {
+        entreprise: savedInfo.nom_entreprise || userInfo.nom_entreprise || firstOffre?.entreprise || "",
+        secteur_activite: savedInfo.secteur_activite || firstOffre?.secteur_activite || "",
+        lieu: savedInfo.localisation || firstOffre?.lieu || "",
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        entreprise: prev.entreprise || defaults.entreprise,
+        secteur_activite: prev.secteur_activite || defaults.secteur_activite,
+        lieu: prev.lieu || defaults.lieu,
+      }))
+    } catch (error) {
+      console.error("Erreur lors du pré-remplissage de l'entreprise:", error)
     }
   }
 
@@ -577,7 +617,7 @@ export default function NewJobPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="nice_to_have">Nice to have (optionnel)</Label>
+            <Label htmlFor="nice_to_have">Compétences appréciées (optionnel)</Label>
             <Textarea
               id="nice_to_have"
               placeholder="Compétences supplémentaires appréciées (une par ligne)..."

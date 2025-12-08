@@ -54,7 +54,7 @@ export function CandidateSidebar() {
           <Briefcase className="h-6 w-6 text-primary-foreground" />
         </div>
         <div>
-          <div className="text-sm font-semibold">TalentHub Pro</div>
+          <div className="text-sm font-semibold">ACADYS</div>
           <div className="text-xs text-muted-foreground">Espace Candidat</div>
         </div>
       </div>

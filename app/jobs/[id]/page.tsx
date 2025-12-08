@@ -273,7 +273,7 @@ export default function JobDetailPage() {
                       <>
                         <Separator />
                         <div>
-                          <h3 className="font-semibold mb-3">Nice to have</h3>
+                          <h3 className="font-semibold mb-3">Atouts appréciés</h3>
                           <ul className="space-y-2">
                             {niceToHave.map((item, idx) => (
                               <li key={idx} className="flex items-start gap-3">

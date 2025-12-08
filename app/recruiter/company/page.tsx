@@ -21,6 +21,8 @@ export default function RecruiterCompanyPage() {
     telephone: "",
     photo_url: "",
     nom_entreprise: "",
+    secteur_activite: "",
+    localisation: "",
   })
 
   useEffect(() => {
@@ -37,6 +39,20 @@ export default function RecruiterCompanyPage() {
       ])
       
       const userInfo = userData.user || userData
+      const offresList = offresData.data || []
+
+      const savedCompanyInfo = typeof window !== "undefined" 
+        ? JSON.parse(localStorage.getItem("company_info") || "{}")
+        : {}
+
+      // Agrégation depuis les offres (fallback si pas dans le profil)
+      const aggregatedInfo = offresList.reduce((acc: any, offre: any) => {
+        if (offre.entreprise && !acc.nom) acc.nom = offre.entreprise
+        if (offre.secteur_activite && !acc.secteur) acc.secteur = offre.secteur_activite
+        if (offre.lieu && !acc.localisation) acc.localisation = offre.lieu
+        return acc
+      }, {} as any)
+
       setUser(userInfo)
       setFormData({
         prenom: userInfo.prenom || "",
@@ -44,10 +60,12 @@ export default function RecruiterCompanyPage() {
         email: userInfo.email || "",
         telephone: userInfo.telephone || "",
         photo_url: userInfo.photo_url || "",
-        nom_entreprise: userInfo.nom_entreprise || "",
+        nom_entreprise: userInfo.nom_entreprise || savedCompanyInfo.nom_entreprise || aggregatedInfo.nom || "",
+        secteur_activite: savedCompanyInfo.secteur_activite || aggregatedInfo.secteur || "",
+        localisation: savedCompanyInfo.localisation || aggregatedInfo.localisation || "",
       })
       
-      setOffres(offresData.data || [])
+      setOffres(offresList)
     } catch (error: any) {
       console.error("Erreur lors du chargement des données:", error)
       toast.error("Erreur lors du chargement des données", {
@@ -61,7 +79,29 @@ export default function RecruiterCompanyPage() {
   const handleSave = async () => {
     try {
       const { authApi } = await import("@/lib/api-client")
-      await authApi.updateProfile(formData)
+      const payload = {
+        prenom: formData.prenom,
+        nom: formData.nom,
+        email: formData.email,
+        telephone: formData.telephone,
+        photo_url: formData.photo_url,
+        nom_entreprise: formData.nom_entreprise,
+      }
+
+      await authApi.updateProfile(payload)
+
+      // Persister les infos d'entreprise localement pour pré-remplir les offres
+      if (typeof window !== "undefined") {
+        localStorage.setItem(
+          "company_info",
+          JSON.stringify({
+            nom_entreprise: formData.nom_entreprise?.trim() || "",
+            secteur_activite: formData.secteur_activite?.trim() || "",
+            localisation: formData.localisation?.trim() || "",
+          })
+        )
+      }
+
       toast.success("Profil mis à jour avec succès")
       setEditing(false)
       loadData()
@@ -75,15 +115,9 @@ export default function RecruiterCompanyPage() {
 
   // Agréger les informations d'entreprise depuis les offres (en fallback si pas dans le profil)
   const companyInfo = offres.reduce((acc: any, offre: any) => {
-    if (offre.entreprise && !acc.nom) {
-      acc.nom = offre.entreprise
-    }
-    if (offre.secteur_activite && !acc.secteur) {
-      acc.secteur = offre.secteur_activite
-    }
-    if (offre.lieu && !acc.localisation) {
-      acc.localisation = offre.lieu
-    }
+    if (offre.entreprise && !acc.nom) acc.nom = offre.entreprise
+    if (offre.secteur_activite && !acc.secteur) acc.secteur = offre.secteur_activite
+    if (offre.lieu && !acc.localisation) acc.localisation = offre.lieu
     return acc
   }, {})
 
@@ -227,17 +261,33 @@ export default function RecruiterCompanyPage() {
               </div>
               <div className="space-y-2">
                 <Label>Secteur d'activité</Label>
-                <div className="flex items-center gap-2 text-sm">
-                  <Briefcase className="h-4 w-4 text-muted-foreground" />
-                  <span>{companyInfo.secteur || "Non renseigné"}</span>
-                </div>
+                {editing ? (
+                  <Input
+                    value={formData.secteur_activite}
+                    onChange={(e) => setFormData({ ...formData, secteur_activite: e.target.value })}
+                    placeholder="Ex : Technologie, Finance..."
+                  />
+                ) : (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Briefcase className="h-4 w-4 text-muted-foreground" />
+                    <span>{formData.secteur_activite || companyInfo.secteur || "Non renseigné"}</span>
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Localisation</Label>
-                <div className="flex items-center gap-2 text-sm">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span>{companyInfo.localisation || "Non renseigné"}</span>
-                </div>
+                {editing ? (
+                  <Input
+                    value={formData.localisation}
+                    onChange={(e) => setFormData({ ...formData, localisation: e.target.value })}
+                    placeholder="Ex : Dakar, Sénégal"
+                  />
+                ) : (
+                  <div className="flex items-center gap-2 text-sm">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <span>{formData.localisation || companyInfo.localisation || "Non renseigné"}</span>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

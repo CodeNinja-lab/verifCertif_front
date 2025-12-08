@@ -52,7 +52,7 @@ export default function SignupPage() {
               <Briefcase className="h-6 w-6 text-primary-foreground" />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              TalentHub Pro
+              ACADYS
             </span>
           </Link>
         </div>
