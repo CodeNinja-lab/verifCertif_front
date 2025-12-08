@@ -57,6 +57,17 @@ export default function NewJobPage() {
 
   useEffect(() => {
     loadCompetences()
+    // Charger les infos d'entreprise immédiatement depuis localStorage si disponibles
+    const savedInfo = getSavedCompanyInfo()
+    if (savedInfo.nom_entreprise || savedInfo.secteur_activite || savedInfo.localisation) {
+      setFormData((prev) => ({
+        ...prev,
+        entreprise: savedInfo.nom_entreprise || prev.entreprise,
+        secteur_activite: savedInfo.secteur_activite || prev.secteur_activite,
+        lieu: savedInfo.localisation || prev.lieu,
+      }))
+    }
+    // Ensuite charger depuis l'API pour avoir les dernières valeurs
     prefillCompanyInfo()
   }, [])
 
@@ -89,11 +100,12 @@ export default function NewJobPage() {
         lieu: savedInfo.localisation || firstOffre?.lieu || "",
       }
 
+      // Toujours appliquer les valeurs par défaut si elles existent
       setFormData((prev) => ({
         ...prev,
-        entreprise: prev.entreprise || defaults.entreprise,
-        secteur_activite: prev.secteur_activite || defaults.secteur_activite,
-        lieu: prev.lieu || defaults.lieu,
+        entreprise: defaults.entreprise ? defaults.entreprise : prev.entreprise,
+        secteur_activite: defaults.secteur_activite ? defaults.secteur_activite : prev.secteur_activite,
+        lieu: defaults.lieu ? defaults.lieu : prev.lieu,
       }))
     } catch (error) {
       console.error("Erreur lors du pré-remplissage de l'entreprise:", error)
@@ -429,6 +441,16 @@ export default function NewJobPage() {
               placeholder="Ex: Entreprise Sénégal"
               value={formData.entreprise}
               onChange={(e) => setFormData({ ...formData, entreprise: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="secteur_activite">Secteur d'activité</Label>
+            <Input 
+              id="secteur_activite" 
+              placeholder="Ex: Technologie, Finance, Santé..."
+              value={formData.secteur_activite}
+              onChange={(e) => setFormData({ ...formData, secteur_activite: e.target.value })}
             />
           </div>
 

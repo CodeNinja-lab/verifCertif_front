@@ -91,20 +91,21 @@ export default function RecruiterCompanyPage() {
       await authApi.updateProfile(payload)
 
       // Persister les infos d'entreprise localement pour pré-remplir les offres
+      // IMPORTANT: Sauvegarder AVANT de recharger les données
       if (typeof window !== "undefined") {
-        localStorage.setItem(
-          "company_info",
-          JSON.stringify({
-            nom_entreprise: formData.nom_entreprise?.trim() || "",
-            secteur_activite: formData.secteur_activite?.trim() || "",
-            localisation: formData.localisation?.trim() || "",
-          })
-        )
+        const companyInfo = {
+          nom_entreprise: formData.nom_entreprise?.trim() || "",
+          secteur_activite: formData.secteur_activite?.trim() || "",
+          localisation: formData.localisation?.trim() || "",
+        }
+        localStorage.setItem("company_info", JSON.stringify(companyInfo))
       }
 
       toast.success("Profil mis à jour avec succès")
       setEditing(false)
-      loadData()
+      
+      // Recharger les données après avoir sauvegardé dans localStorage
+      await loadData()
     } catch (error: any) {
       console.error("Erreur lors de la mise à jour:", error)
       toast.error("Erreur lors de la mise à jour", {
