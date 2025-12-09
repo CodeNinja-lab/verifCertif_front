@@ -14,11 +14,13 @@ import {
   AlertCircle,
   LogOut,
   FileText,
+  Home,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 // Import dynamique pour éviter le bundling côté serveur
 
 const navigation = [
+  { name: "Accueil", href: "/", icon: Home },
   { name: "Vue d'ensemble", href: "/admin", icon: LayoutDashboard },
   { name: "Utilisateurs", href: "/admin/users", icon: Users },
   { name: "Offres d'emploi", href: "/admin/jobs", icon: Briefcase },
@@ -49,11 +51,11 @@ export function AdminSidebar() {
   return (
     <div className="flex h-full flex-col gap-y-5 border-r border-border bg-card px-6 py-8">
       <div className="flex items-center gap-2">
-        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white">
+        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white">
           <ShieldCheck className="h-6 w-6" />
         </div>
         <div>
-          <div className="text-sm font-semibold">TalentHub Admin</div>
+          <div className="text-sm font-semibold">ACADYS Admin</div>
           <div className="text-xs text-muted-foreground">Super Admin</div>
         </div>
       </div>

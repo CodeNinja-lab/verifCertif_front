@@ -2,7 +2,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Briefcase, Users, Building2, GraduationCap, ArrowRight, Check } from "lucide-react"
+import { Briefcase, Users, Building2, GraduationCap, ArrowRight, Check, ArrowLeft } from "lucide-react"
 
 const userTypes = [
   {
@@ -16,7 +16,7 @@ const userTypes = [
       "Matching IA personnalisé",
       "Alertes emploi en temps réel",
     ],
-    color: "from-primary to-blue-600",
+    color: "from-blue-500 to-blue-600",
   },
   {
     type: "recruiter",
@@ -29,7 +29,7 @@ const userTypes = [
       "Outils de tri automatique",
       "Analytics avancés",
     ],
-    color: "from-secondary to-green-600",
+    color: "from-blue-600 to-blue-700",
   },
   {
     type: "university",
@@ -37,7 +37,7 @@ const userTypes = [
     title: "Université / École",
     description: "Je certifie les diplômes de mes étudiants",
     benefits: ["Certification numérique", "Gestion des étudiants", "Blockchain sécurisée", "Vérification instantanée"],
-    color: "from-purple-500 to-pink-600",
+    color: "from-blue-700 to-blue-800",
   },
 ]
 
@@ -46,7 +46,7 @@ export default function SignupPage() {
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/5">
       {/* Header */}
       <header className="border-b border-border/40 bg-background/95 backdrop-blur">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group w-fit">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center transition-transform group-hover:scale-105">
               <Briefcase className="h-6 w-6 text-primary-foreground" />
@@ -54,6 +54,10 @@ export default function SignupPage() {
             <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               ACADYS
             </span>
+          </Link>
+          <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            Retour à l'accueil
           </Link>
         </div>
       </header>

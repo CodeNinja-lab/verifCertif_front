@@ -14,11 +14,13 @@ import {
   FileText,
   TrendingUp,
   LogOut,
+  Home,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 // Import dynamique pour éviter le bundling côté serveur
 
 const navigation = [
+  { name: "Accueil", href: "/", icon: Home },
   { name: "Tableau de bord", href: "/candidate", icon: LayoutDashboard },
   { name: "Mon profil", href: "/candidate/profile", icon: User },
   { name: "Mon CV", href: "/candidate/cv", icon: FileText },

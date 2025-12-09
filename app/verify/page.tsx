@@ -19,6 +19,7 @@ import {
   Calendar,
   Upload,
   AlertCircle,
+  ArrowLeft,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
@@ -94,7 +95,7 @@ export default function VerifyPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/5">
       <header className="border-b border-border/40 bg-background/95 backdrop-blur">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group w-fit">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center transition-transform group-hover:scale-105">
               <Briefcase className="h-6 w-6 text-primary-foreground" />
@@ -103,25 +104,31 @@ export default function VerifyPage() {
               ACADYS
             </span>
           </Link>
+          <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            Retour à l'accueil
+          </Link>
         </div>
       </header>
 
       <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="text-center space-y-4 mb-12">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-[#009EE0] shadow-lg">
-            <Shield className="h-8 w-8 text-white" />
+        <div className="text-center space-y-6 mb-12">
+          <div className="inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-xl">
+            <Shield className="h-10 w-10 text-white" />
           </div>
-          <h1 className="text-4xl font-bold tracking-tight">Vérifier un diplôme</h1>
-          <p className="text-xl text-muted-foreground text-balance max-w-2xl mx-auto">
-            Vérifiez l'authenticité d'un diplôme grâce à la blockchain
-          </p>
+          <div className="space-y-3">
+            <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">Vérifier un diplôme</h1>
+            <p className="text-lg text-muted-foreground text-balance max-w-2xl mx-auto">
+              Vérifiez l'authenticité d'un diplôme grâce à la technologie blockchain
+            </p>
+          </div>
         </div>
 
         {!verificationResult ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>Vérifier un diplôme</CardTitle>
-              <CardDescription>
+          <Card className="shadow-lg border-2">
+            <CardHeader className="space-y-3 pb-6">
+              <CardTitle className="text-2xl">Vérifier un diplôme</CardTitle>
+              <CardDescription className="text-base">
                 Saisissez l'identifiant ou le hash du diplôme, ou téléversez directement le fichier à
                 vérifier.
               </CardDescription>
@@ -176,7 +183,7 @@ export default function VerifyPage() {
               <Button
                 onClick={handleVerify}
                 disabled={(!certId && !file) || isVerifying}
-                className="w-full h-12 bg-[#009EE0] hover:bg-[#008AC0] transition-opacity"
+                className="w-full h-12 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition-all shadow-md"
               >
                 {isVerifying ? (
                   <>
@@ -191,11 +198,14 @@ export default function VerifyPage() {
                 )}
               </Button>
 
-              <div className="bg-muted/50 rounded-lg p-4 border border-border">
-                <p className="text-sm text-muted-foreground">
-                  La vérification s'effectue sur la base du hash cryptographique du document, de sa
-                  signature numérique (Ed25519) et, lorsque disponible, de son ancrage sur la blockchain.
-                </p>
+              <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                <div className="flex gap-3">
+                  <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-blue-900 dark:text-blue-100">
+                    La vérification s'effectue sur la base du hash cryptographique du document, de sa
+                    signature numérique (Ed25519) et, lorsque disponible, de son ancrage sur la blockchain.
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>

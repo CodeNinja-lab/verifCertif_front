@@ -13,10 +13,10 @@ export default function AboutPage() {
           <div className="container px-4 md:px-6">
             <div className="mx-auto max-w-3xl text-center space-y-4">
               <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl text-balance">
-                Notre Mission : Connecter les Talents
+                ACADYS : Academic Digital System
               </h1>
               <p className="text-lg text-muted-foreground text-balance">
-                Nous transformons le recrutement en créant des opportunités qui changent des vies
+                Révolutionner la certification académique et le recrutement grâce à la blockchain
               </p>
             </div>
           </div>
@@ -28,54 +28,54 @@ export default function AboutPage() {
               <div className="space-y-6">
                 <h2 className="text-3xl font-bold tracking-tight">Qui sommes-nous ?</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  TalentHub est née d'une vision simple : rendre le recrutement plus humain, plus efficace et plus
-                  accessible. Fondée en 2020, notre plateforme a déjà aidé plus de 50,000 candidats à trouver leur
-                  prochain défi professionnel et permis à 5,000 entreprises de rencontrer leurs talents idéaux.
+                  ACADYS est une plateforme innovante qui combine la certification numérique des diplômes via la blockchain 
+                  et le matching intelligent entre étudiants et recruteurs. Notre mission est de garantir l'authenticité 
+                  des diplômes tout en facilitant l'insertion professionnelle des jeunes diplômés.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
-                  Nous croyons que chaque personne mérite une opportunité qui correspond vraiment à ses aspirations, et
-                  que chaque entreprise mérite des talents qui partagent ses valeurs. C'est pourquoi nous avons
-                  développé une technologie d'IA avancée pour créer des matches parfaits.
+                  Nous croyons en un monde où chaque diplôme est vérifiable instantanément, où la fraude académique n'existe plus, 
+                  et où chaque talent trouve l'opportunité qui correspond à ses compétences réelles. C'est pourquoi nous avons 
+                  développé une solution complète alliant sécurité blockchain et intelligence artificielle.
                 </p>
-                <Button size="lg" className="bg-gradient-to-r from-secondary to-primary">
+                <Button size="lg" className="bg-gradient-to-r from-blue-500 to-blue-600">
                   Rejoignez l'aventure
                 </Button>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Card>
                   <CardContent className="flex flex-col items-center p-6 text-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-secondary to-primary text-white mb-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white mb-4">
                       <Users className="h-6 w-6" />
                     </div>
-                    <div className="text-3xl font-bold">50K+</div>
-                    <div className="text-sm text-muted-foreground">Candidats actifs</div>
+                    <div className="text-3xl font-bold">10K+</div>
+                    <div className="text-sm text-muted-foreground">Étudiants inscrits</div>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="flex flex-col items-center p-6 text-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-secondary to-primary text-white mb-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white mb-4">
                       <Briefcase className="h-6 w-6" />
                     </div>
-                    <div className="text-3xl font-bold">5K+</div>
+                    <div className="text-3xl font-bold">500+</div>
                     <div className="text-sm text-muted-foreground">Entreprises partenaires</div>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="flex flex-col items-center p-6 text-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-secondary to-primary text-white mb-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white mb-4">
                       <Award className="h-6 w-6" />
                     </div>
-                    <div className="text-3xl font-bold">95%</div>
-                    <div className="text-sm text-muted-foreground">Taux de satisfaction</div>
+                    <div className="text-3xl font-bold">100%</div>
+                    <div className="text-sm text-muted-foreground">Diplômes sécurisés</div>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="flex flex-col items-center p-6 text-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-secondary to-primary text-white mb-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white mb-4">
                       <TrendingUp className="h-6 w-6" />
                     </div>
-                    <div className="text-3xl font-bold">2x</div>
-                    <div className="text-sm text-muted-foreground">Plus rapide</div>
+                    <div className="text-3xl font-bold">5+</div>
+                    <div className="text-sm text-muted-foreground">Universités partenaires</div>
                   </CardContent>
                 </Card>
               </div>
@@ -92,37 +92,37 @@ export default function AboutPage() {
             <div className="grid gap-8 md:grid-cols-3">
               <Card>
                 <CardContent className="p-6 space-y-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-secondary to-primary text-white">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white">
                     <Target className="h-6 w-6" />
                   </div>
-                  <h3 className="text-xl font-semibold">Excellence</h3>
+                  <h3 className="text-xl font-semibold">Sécurité</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Nous visons l'excellence dans chaque fonctionnalité, chaque interaction et chaque résultat pour nos
-                    utilisateurs.
+                    La blockchain garantit l'authenticité et l'intégrité de chaque diplôme certifié sur notre plateforme.
+                    Vos données académiques sont protégées et infalsifiables.
                   </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-6 space-y-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-secondary to-primary text-white">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white">
                     <Heart className="h-6 w-6" />
                   </div>
-                  <h3 className="text-xl font-semibold">Humanité</h3>
+                  <h3 className="text-xl font-semibold">Transparence</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Derrière chaque profil se cache une personne avec des rêves. Nous plaçons l'humain au cœur de notre
-                    technologie.
+                    Nous croyons en la transparence totale. Chaque vérification de diplôme est traçable et 
+                    chaque matching est expliqué pour comprendre les recommandations.
                   </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-6 space-y-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-secondary to-primary text-white">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white">
                     <Zap className="h-6 w-6" />
                   </div>
                   <h3 className="text-xl font-semibold">Innovation</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Nous repoussons constamment les limites de la technologie pour créer l'expérience de recrutement du
-                    futur.
+                    En combinant blockchain et intelligence artificielle, nous créons une solution unique qui 
+                    révolutionne la certification académique et le recrutement.
                   </p>
                 </CardContent>
               </Card>
@@ -132,14 +132,14 @@ export default function AboutPage() {
 
         <section className="py-16">
           <div className="container px-4 md:px-6">
-            <div className="mx-auto max-w-3xl rounded-2xl bg-gradient-to-br from-secondary/20 via-primary/20 to-background border p-12 text-center space-y-6">
-              <h2 className="text-3xl font-bold tracking-tight">Prêt à transformer votre carrière ?</h2>
+            <div className="mx-auto max-w-3xl rounded-2xl bg-gradient-to-br from-blue-500/20 via-blue-600/20 to-background border p-12 text-center space-y-6">
+              <h2 className="text-3xl font-bold tracking-tight">Rejoignez la révolution numérique</h2>
               <p className="text-muted-foreground text-balance">
-                Rejoignez des milliers de professionnels qui ont déjà trouvé leur opportunité idéale sur TalentHub
+                Que vous soyez étudiant, recruteur ou université, ACADYS vous accompagne dans votre transformation digitale
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button size="lg" className="bg-gradient-to-r from-secondary to-primary">
-                  Je suis candidat
+                <Button size="lg" className="bg-gradient-to-r from-blue-500 to-blue-600">
+                  Je suis étudiant
                 </Button>
                 <Button size="lg" variant="outline">
                   Je recrute

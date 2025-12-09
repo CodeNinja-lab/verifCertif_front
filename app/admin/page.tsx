@@ -61,7 +61,7 @@ export default function AdminDashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Vue d'ensemble</h1>
-          <p className="text-muted-foreground">Bienvenue sur le panneau d'administration de TalentHub.</p>
+          <p className="text-muted-foreground">Bienvenue sur le panneau d'administration d'ACADYS.</p>
         </div>
         <Select defaultValue="30days">
           <SelectTrigger className="w-[180px]">

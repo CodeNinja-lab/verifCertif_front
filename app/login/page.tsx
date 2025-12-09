@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Briefcase, Mail, Lock, Eye, EyeOff, ArrowRight, Shield } from "lucide-react"
+import { Briefcase, Mail, Lock, Eye, EyeOff, ArrowRight, Shield, ArrowLeft } from "lucide-react"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -96,6 +96,12 @@ export default function LoginPage() {
       {/* Left side - Form */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md space-y-8">
+          {/* Bouton retour */}
+          <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            Retour à l'accueil
+          </Link>
+          
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group justify-center">
             <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center transition-transform group-hover:scale-105">
