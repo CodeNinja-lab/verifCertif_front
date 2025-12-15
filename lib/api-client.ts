@@ -363,3 +363,77 @@ export const authApi = {
   },
 }
 
+// Service API pour les documents/diplômes
+export const documentApi = {
+  // Liste des documents de l'utilisateur connecté
+  list: async (params?: {
+    statut?: string
+    type_document?: string
+    search?: string
+    per_page?: number
+  }) => {
+    const queryParams = new URLSearchParams()
+    if (params?.statut) queryParams.append("statut", params.statut)
+    if (params?.type_document) queryParams.append("type_document", params.type_document)
+    if (params?.search) queryParams.append("search", params.search)
+    if (params?.per_page) queryParams.append("per_page", params.per_page.toString())
+
+    const response = await apiCall(`/documents?${queryParams.toString()}`)
+    return response.json()
+  },
+
+  // Mes diplômes (pour les étudiants - recherche par ID et numero_etudiant)
+  myDocuments: async (params?: {
+    type_document?: string
+    per_page?: number
+  }) => {
+    const queryParams = new URLSearchParams()
+    if (params?.type_document) queryParams.append("type_document", params.type_document)
+    if (params?.per_page) queryParams.append("per_page", params.per_page.toString())
+
+    const response = await apiCall(`/documents/my-documents?${queryParams.toString()}`)
+    return response.json()
+  },
+
+  // Obtenir un document
+  get: async (id: number | string) => {
+    const response = await apiCall(`/documents/${id}`)
+    return response.json()
+  },
+
+  // Télécharger un document
+  download: async (id: number | string) => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
+    const headers: HeadersInit = {
+      'Accept': 'application/pdf, application/octet-stream, */*',
+    }
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
+    }
+
+    const response = await fetch(`${API_URL}/documents/${id}/download`, {
+      headers,
+    })
+
+    if (!response.ok) {
+      // Essayer de récupérer le message d'erreur du backend
+      let errorMessage = "Erreur lors du téléchargement"
+      try {
+        const errorData = await response.json()
+        errorMessage = errorData.message || errorMessage
+      } catch {
+        // Si la réponse n'est pas du JSON, utiliser le message par défaut
+      }
+      throw new Error(errorMessage)
+    }
+
+    return response.blob()
+  },
+
+  // Vérifier un document par UUID
+  verify: async (uuid: string) => {
+    const response = await fetch(`${API_URL}/documents/${uuid}/verify`)
+    return response.json()
+  },
+}
+

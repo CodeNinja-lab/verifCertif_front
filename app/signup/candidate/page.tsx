@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Briefcase, Mail, Lock, Eye, EyeOff, User, Phone, ArrowRight, ArrowLeft } from "lucide-react"
+import { Briefcase, Mail, Lock, Eye, EyeOff, User, Phone, ArrowRight, ArrowLeft, GraduationCap } from "lucide-react"
 
 export default function CandidateSignupPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -17,6 +17,7 @@ export default function CandidateSignupPage() {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
+    studentId: "",
     email: "",
     phone: "",
     password: "",
@@ -50,6 +51,7 @@ export default function CandidateSignupPage() {
         password: formData.password,
         password_confirmation: formData.confirmPassword,
         telephone: formData.phone,
+        numero_etudiant: formData.studentId,
         role: "etudiant",
         langue: "fr",
       }),
@@ -164,6 +166,23 @@ export default function CandidateSignupPage() {
                   required
                 />
               </div>
+            </div>
+
+            {/* Student ID */}
+            <div className="space-y-2">
+              <Label htmlFor="studentId">Numéro Étudiant</Label>
+              <div className="relative">
+                <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="studentId"
+                  placeholder="ETU-2024-001"
+                  className="pl-9 h-11"
+                  value={formData.studentId}
+                  onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
+                  required
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">Ce numéro vous est attribué par votre université</p>
             </div>
 
             {/* Phone */}
