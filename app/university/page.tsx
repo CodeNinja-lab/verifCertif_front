@@ -19,6 +19,7 @@ import {
 } from "lucide-react" // Added Printer icon
 import Link from "next/link"
 import { useState } from "react"
+import * as React from "react"
 import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
@@ -143,91 +144,116 @@ function GenerateAccessCode() {
 }
 
 export default function UniversityDashboardPage() {
-  const stats = [
+  const [stats, setStats] = useState([
     {
       title: "Étudiants actifs",
-      value: "12,847",
-      change: "+12.5%",
+      value: "...",
+      change: "...",
       icon: Users,
       color: "from-blue-500 to-cyan-500",
     },
     {
       title: "Diplômes délivrés",
-      value: "3,256",
-      change: "+8.2%",
+      value: "...",
+      change: "...",
       icon: GraduationCap,
       color: "from-purple-500 to-pink-500",
     },
     {
       title: "Certifications blockchain",
-      value: "2,891",
-      change: "+15.3%",
+      value: "...",
+      change: "...",
       icon: Award,
       color: "from-green-500 to-emerald-500",
     },
     {
       title: "Vérifications",
-      value: "1,423",
-      change: "+24.1%",
+      value: "...",
+      change: "...",
       icon: FileCheck,
       color: "from-orange-500 to-red-500",
     },
-  ]
+  ])
+  const [recentDegrees, setRecentDegrees] = useState<any[]>([])
+  const [recentVerifications, setRecentVerifications] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const recentDegrees = [
-    {
-      id: 1,
-      student: "Sophie Martin",
-      degree: "Master en Informatique",
-      date: "2024-06-15",
-      status: "certified",
-    },
-    {
-      id: 2,
-      student: "Thomas Dubois",
-      degree: "Licence en Mathématiques",
-      date: "2024-06-14",
-      status: "certified",
-    },
-    {
-      id: 3,
-      student: "Marie Laurent",
-      degree: "Doctorat en Physique",
-      date: "2024-06-13",
-      status: "pending",
-    },
-    {
-      id: 4,
-      student: "Pierre Bernard",
-      degree: "Master en Économie",
-      date: "2024-06-12",
-      status: "certified",
-    },
-  ]
+  React.useEffect(() => {
+    loadDashboardData()
+  }, [])
 
-  const recentVerifications = [
-    {
-      id: 1,
-      company: "Entreprise Sénégal",
-      student: "Sophie Martin",
-      date: "Il y a 2 heures",
-      status: "verified",
-    },
-    {
-      id: 2,
-      company: "Innovation Labs",
-      student: "Thomas Dubois",
-      date: "Il y a 5 heures",
-      status: "verified",
-    },
-    {
-      id: 3,
-      company: "Digital Solutions",
-      student: "Marie Laurent",
-      date: "Il y a 1 jour",
-      status: "verified",
-    },
-  ]
+  const loadDashboardData = async () => {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
+      const token = localStorage.getItem("auth_token")
+
+      if (!token) return
+
+      // Charger les statistiques
+      const statsRes = await fetch(`${API_URL}/dashboard/stats`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      
+      if (statsRes.ok) {
+        const statsData = await statsRes.json()
+        setStats([
+          {
+            title: "Étudiants actifs",
+            value: statsData.students.total.toLocaleString(),
+            change: statsData.students.growth,
+            icon: Users,
+            color: "from-blue-500 to-cyan-500",
+          },
+          {
+            title: "Diplômes délivrés",
+            value: statsData.degrees.total.toLocaleString(),
+            change: statsData.degrees.growth,
+            icon: GraduationCap,
+            color: "from-purple-500 to-pink-500",
+          },
+          {
+            title: "Certifications blockchain",
+            value: statsData.certifications.total.toLocaleString(),
+            change: statsData.certifications.growth,
+            icon: Award,
+            color: "from-green-500 to-emerald-500",
+          },
+          {
+            title: "Vérifications",
+            value: statsData.verifications.total.toLocaleString(),
+            change: statsData.verifications.growth,
+            icon: FileCheck,
+            color: "from-orange-500 to-red-500",
+          },
+        ])
+      }
+
+      // Charger les diplômes récents
+      const degreesRes = await fetch(`${API_URL}/dashboard/recent-degrees`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (degreesRes.ok) {
+        const degreesData = await degreesRes.json()
+        setRecentDegrees(degreesData)
+      }
+
+      // Charger les vérifications récentes
+      const verificationsRes = await fetch(`${API_URL}/dashboard/recent-verifications`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (verificationsRes.ok) {
+        const verificationsData = await verificationsRes.json()
+        setRecentVerifications(verificationsData)
+      }
+
+      setLoading(false)
+    } catch (error) {
+      console.error("Erreur de chargement:", error)
+      setLoading(false)
+    }
+  }
+
+
 
   return (
     <div className="space-y-6 p-6">
@@ -263,7 +289,7 @@ export default function UniversityDashboardPage() {
           <div>
             <h3 className="text-lg font-bold">Démonstration : Générateur de Diplômes Certifiés</h3>
             <p className="text-muted-foreground">
-              Générez un PDF officiel de l'UCAD avec signature et hash de vérification.
+              Générez un PDF officiel d'ACADYS avec signature et hash de vérification.
             </p>
           </div>
         </div>

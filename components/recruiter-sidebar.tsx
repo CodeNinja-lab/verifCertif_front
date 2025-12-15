@@ -14,11 +14,13 @@ import {
   BarChart3,
   Plus,
   LogOut,
+  Home,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 // Import dynamique pour éviter le bundling côté serveur
 
 const navigation = [
+  { name: "Accueil", href: "/", icon: Home },
   { name: "Tableau de bord", href: "/recruiter", icon: LayoutDashboard },
   { name: "Mes offres", href: "/recruiter/jobs", icon: Briefcase },
   { name: "Candidats", href: "/recruiter/candidates", icon: Users },

@@ -16,7 +16,8 @@ import {
   ScanLine,
   Sparkles,
   FileCheck,
-  Brain
+  Brain,
+  Home
 } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 
@@ -61,17 +62,24 @@ export function PublicHeader() {
         </div>
 
         {/* Desktop navigation */}
-        <div className="hidden lg:flex lg:gap-x-8">
+        <div className="hidden lg:flex lg:gap-x-6">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors whitespace-nowrap"
+          >
+            <Home className="h-4 w-4" />
+            Accueil
+          </Link>
           <Link
             href="/verify"
-            className="flex items-center gap-2 text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors"
+            className="flex items-center gap-2 text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors whitespace-nowrap"
           >
             <ScanLine className="h-4 w-4" />
             Vérifier un diplôme
           </Link>
           <Link
             href="/jobs"
-            className="flex items-center gap-2 text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors"
+            className="flex items-center gap-2 text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors whitespace-nowrap"
           >
             <Briefcase className="h-4 w-4" />
             Offres d'emploi
@@ -174,6 +182,13 @@ export function PublicHeader() {
       {mobileMenuOpen && (
         <div className="lg:hidden">
           <div className="space-y-2 px-4 pb-6 pt-2">
+            <Link
+              href="/"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-base font-semibold leading-7 text-foreground hover:bg-accent"
+            >
+              <Home className="h-5 w-5" />
+              Accueil
+            </Link>
             <Link
               href="/verify"
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-base font-semibold leading-7 text-foreground hover:bg-accent"

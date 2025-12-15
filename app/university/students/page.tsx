@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,63 +10,81 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Search, Filter, UserPlus, Mail, Phone, MoreVertical, GraduationCap } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
-const students = [
-  {
-    id: 1,
-    name: "Sophie Martin",
-    email: "sophie.martin@univ.fr",
-    phone: "+221 77 123 45 67",
-    program: "Master Informatique",
-    year: "2024",
-    status: "active",
-    degrees: 2,
-  },
-  {
-    id: 2,
-    name: "Thomas Dubois",
-    email: "thomas.dubois@univ.fr",
-    phone: "+221 77 234 56 78",
-    program: "Licence Mathématiques",
-    year: "2024",
-    status: "active",
-    degrees: 1,
-  },
-  {
-    id: 3,
-    name: "Marie Laurent",
-    email: "marie.laurent@univ.fr",
-    phone: "+221 77 345 67 89",
-    program: "Doctorat Physique",
-    year: "2023",
-    status: "graduated",
-    degrees: 3,
-  },
-  {
-    id: 4,
-    name: "Pierre Bernard",
-    email: "pierre.bernard@univ.fr",
-    phone: "+221 77 456 78 90",
-    program: "Master Économie",
-    year: "2024",
-    status: "active",
-    degrees: 1,
-  },
-  {
-    id: 5,
-    name: "Julie Petit",
-    email: "julie.petit@univ.fr",
-    phone: "+221 77 567 89 01",
-    program: "Licence Droit",
-    year: "2025",
-    status: "active",
-    degrees: 0,
-  },
-]
+interface StudentStats {
+  total: number
+  active: number
+  graduated: number
+  new_this_month: number
+}
+
+interface Student {
+  id: number
+  nom: string
+  prenom: string
+  email: string
+  telephone: string | null
+  status: string
+  created_at: string
+  degrees_count: number
+}
 
 export default function StudentsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [filterStatus, setFilterStatus] = useState("all")
   const [filterProgram, setFilterProgram] = useState("all")
+  const [students, setStudents] = useState<Student[]>([])
+  const [stats, setStats] = useState<StudentStats>({ total: 0, active: 0, graduated: 0, new_this_month: 0 })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetchStudentsData()
+  }, [searchQuery, filterStatus])
+
+  const fetchStudentsData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
+      const token = localStorage.getItem("auth_token")
+      
+      if (!token) {
+        setError("Non authentifié")
+        return
+      }
+
+      // Fetch stats
+      const statsResponse = await fetch(`${API_URL}/dashboard/students/stats`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      
+      if (statsResponse.ok) {
+        const statsData = await statsResponse.json()
+        setStats(statsData.data)
+      }
+
+      // Fetch students list
+      const params = new URLSearchParams()
+      if (searchQuery) params.append('search', searchQuery)
+      if (filterStatus !== 'all') params.append('status', filterStatus)
+      
+      const listResponse = await fetch(`${API_URL}/dashboard/students/list?${params}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      if (listResponse.ok) {
+        const listData = await listResponse.json()
+        setStudents(listData.data.data)
+      } else {
+        setError("Erreur lors du chargement des étudiants")
+      }
+    } catch (err) {
+      setError("Erreur de connexion au serveur")
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="space-y-6 p-6">
@@ -89,7 +107,7 @@ export default function StudentsPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Total étudiants</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12,847</div>
+            <div className="text-2xl font-bold">{loading ? "..." : stats.total.toLocaleString()}</div>
           </CardContent>
         </Card>
         <Card>
@@ -97,7 +115,7 @@ export default function StudentsPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Actifs</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">9,234</div>
+            <div className="text-2xl font-bold">{loading ? "..." : stats.active.toLocaleString()}</div>
           </CardContent>
         </Card>
         <Card>
@@ -105,7 +123,7 @@ export default function StudentsPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Diplômés</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3,613</div>
+            <div className="text-2xl font-bold">{loading ? "..." : stats.graduated.toLocaleString()}</div>
           </CardContent>
         </Card>
         <Card>
@@ -113,7 +131,7 @@ export default function StudentsPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Nouveaux (ce mois)</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">287</div>
+            <div className="text-2xl font-bold">{loading ? "..." : stats.new_this_month.toLocaleString()}</div>
           </CardContent>
         </Card>
       </div>
@@ -178,71 +196,90 @@ export default function StudentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {students.map((student) => (
-                <TableRow key={student.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center flex-shrink-0">
-                        <span className="text-sm font-semibold text-white">
-                          {student.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="font-medium">{student.name}</p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-sm">
-                        <Mail className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-muted-foreground">{student.email}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Phone className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-muted-foreground">{student.phone}</span>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                      <span>{student.program}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{student.year}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">
-                      {student.degrees} diplôme{student.degrees > 1 ? "s" : ""}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {student.status === "active" ? (
-                      <Badge className="bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400">Actif</Badge>
-                    ) : (
-                      <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400">Diplômé</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Voir le profil</DropdownMenuItem>
-                        <DropdownMenuItem>Modifier</DropdownMenuItem>
-                        <DropdownMenuItem>Ajouter un diplôme</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Désactiver</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8">
+                    Chargement des étudiants...
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : error ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8 text-red-500">
+                    {error}
+                  </TableCell>
+                </TableRow>
+              ) : students.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    Aucun étudiant trouvé
+                  </TableCell>
+                </TableRow>
+              ) : (
+                students.map((student) => (
+                  <TableRow key={student.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center flex-shrink-0">
+                          <span className="text-sm font-semibold text-white">
+                            {student.prenom[0]}{student.nom[0]}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium">{student.prenom} {student.nom}</p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Mail className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-muted-foreground">{student.email}</span>
+                        </div>
+                        {student.telephone && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Phone className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-muted-foreground">{student.telephone}</span>
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                        <span>-</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{new Date(student.created_at).getFullYear()}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">
+                        {student.degrees_count} diplôme{student.degrees_count > 1 ? "s" : ""}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {student.status === "active" ? (
+                        <Badge className="bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400">Actif</Badge>
+                      ) : (
+                        <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400">Diplômé</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>Voir le profil</DropdownMenuItem>
+                          <DropdownMenuItem>Modifier</DropdownMenuItem>
+                          <DropdownMenuItem>Ajouter un diplôme</DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive">Désactiver</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>

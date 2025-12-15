@@ -12,11 +12,13 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  Home,
 } from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 
 const navigation = [
+  { name: "Accueil", href: "/", icon: Home },
   { name: "Tableau de bord", href: "/university", icon: LayoutDashboard },
   { name: "Étudiants", href: "/university/students", icon: Users },
   { name: "Diplômes", href: "/university/degrees", icon: GraduationCap },
@@ -41,10 +43,10 @@ export function UniversitySidebar() {
         <div className="flex h-16 items-center justify-between border-b border-border px-4">
           {!collapsed && (
             <Link href="/university" className="flex items-center gap-2 group">
-              <div className="h-8 w-8 relative">
-                <img src="/ucad-logo.png" alt="Logo UCAD" className="object-contain h-full w-full rounded-lg" />
+              <div className="h-8 w-8 relative flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
+                <GraduationCap className="h-5 w-5 text-white" />
               </div>
-              <span className="font-semibold text-[#009EE0]">UCAD</span>
+              <span className="font-semibold text-[#009EE0]">ACADYS</span>
             </Link>
           )}
           <Button variant="ghost" size="icon" onClick={() => setCollapsed(!collapsed)} className="h-8 w-8">
@@ -85,8 +87,8 @@ export function UniversitySidebar() {
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">Admin UCAD</p>
-                <p className="text-xs text-muted-foreground truncate">admin@ucad.edu.sn</p>
+                <p className="text-sm font-medium truncate">Admin ACADYS</p>
+                <p className="text-xs text-muted-foreground truncate">admin@acadys.sn</p>
               </div>
             )}
           </div>
