@@ -35,10 +35,13 @@ export default function JobDetailPage() {
   const [similarJobs, setSimilarJobs] = useState<any[]>([])
 
   useEffect(() => {
-    loadJob()
+    if (jobId) {
+      loadJob()
+    }
   }, [jobId])
 
   const loadJob = async () => {
+    if (!jobId) return
     try {
       setLoading(true)
       const { offreApi } = await import("@/lib/api-client")
@@ -211,7 +214,7 @@ export default function JobDetailPage() {
 
                 <div className="flex gap-3">
                   <Button size="lg" className="bg-gradient-to-r from-primary to-secondary text-lg" asChild>
-                    <Link href={`/jobs/${job.id}/apply`}>Postuler maintenant</Link>
+                    <Link href={`/jobs/${jobId}/apply`}>Postuler maintenant</Link>
                   </Button>
                   <Button size="lg" variant="outline">
                     Contacter le recruteur
@@ -382,7 +385,7 @@ export default function JobDetailPage() {
                   Postulez dès maintenant et rejoignez une équipe passionnée !
                 </p>
                 <Button className="w-full bg-gradient-to-r from-primary to-secondary" size="lg" asChild>
-                  <Link href={`/jobs/${job.id}/apply`}>Postuler</Link>
+                  <Link href={`/jobs/${jobId}/apply`}>Postuler</Link>
                 </Button>
               </Card>
 
