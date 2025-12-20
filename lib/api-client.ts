@@ -278,9 +278,21 @@ export const recruiterStatsApi = {
 
 // Service API pour les messages
 export const messageApi = {
-  // Liste des conversations
+  // Liste des conversations (recruteur)
   conversations: async () => {
     const response = await apiCall("/messages/conversations")
+    return response.json()
+  },
+
+  // Liste des conversations (étudiant)
+  myConversations: async () => {
+    const response = await apiCall("/messages/my-conversations")
+    return response.json()
+  },
+
+  // Obtenir une conversation par ID (étudiant)
+  getMyConversation: async (conversationId: number | string) => {
+    const response = await apiCall(`/messages/my-conversation/${conversationId}`)
     return response.json()
   },
 
@@ -342,6 +354,39 @@ export const authApi = {
     return response.json()
   },
 
+  // Upload de photo de profil
+  uploadPhoto: async (file: File) => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
+    const formData = new FormData()
+    formData.append("photo", file)
+
+    const headers: HeadersInit = {}
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
+    }
+
+    const response = await fetch(`${API_URL}/auth/upload-photo`, {
+      method: "POST",
+      headers,
+      body: formData,
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: "Erreur lors de l'upload" }))
+      throw new Error(error.message || `Erreur ${response.status}`)
+    }
+
+    return response.json()
+  },
+
+  // Supprimer la photo de profil
+  deletePhoto: async () => {
+    const response = await apiCall("/auth/delete-photo", {
+      method: "DELETE",
+    })
+    return response.json()
+  },
+
   // Changer le mot de passe
   changePassword: async (data: {
     current_password: string
@@ -358,6 +403,94 @@ export const authApi = {
   logout: async () => {
     const response = await apiCall("/auth/logout", {
       method: "POST",
+    })
+    return response.json()
+  },
+}
+
+// Service API pour le profil étudiant
+export const profilEtudiantApi = {
+  // Obtenir le profil
+  get: async () => {
+    const response = await apiCall("/profil-etudiant")
+    return response.json()
+  },
+
+  // Créer un profil
+  create: async (data: {
+    bio?: string
+    cv_url?: string
+    linkedin_url?: string
+    github_url?: string
+    portfolio_url?: string
+    disponibilite?: string
+    localisation_actuelle?: string
+    localisation_souhaitee?: string[]
+    mobilite?: string
+    salaire_minimum_souhaite?: number
+    types_contrat_souhaites?: string[]
+    profil_public?: boolean
+  }) => {
+    const response = await apiCall("/profil-etudiant", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+    return response.json()
+  },
+
+  // Mettre à jour le profil
+  update: async (data: {
+    bio?: string
+    cv_url?: string
+    linkedin_url?: string
+    github_url?: string
+    portfolio_url?: string
+    disponibilite?: string
+    localisation_actuelle?: string
+    localisation_souhaitee?: string[]
+    mobilite?: string
+    salaire_minimum_souhaite?: number
+    types_contrat_souhaites?: string[]
+    profil_public?: boolean
+  }) => {
+    const response = await apiCall("/profil-etudiant", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+    return response.json()
+  },
+
+  // Supprimer le profil
+  delete: async () => {
+    const response = await apiCall("/profil-etudiant", {
+      method: "DELETE",
+    })
+    return response.json()
+  },
+
+  // Obtenir les compétences
+  getCompetences: async () => {
+    const response = await apiCall("/profil-etudiant/competences")
+    return response.json()
+  },
+
+  // Ajouter une compétence
+  addCompetence: async (data: {
+    competence_id: number
+    niveau?: string
+    annees_experience?: number
+  }) => {
+    const response = await apiCall("/profil-etudiant/competences", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+    return response.json()
+  },
+
+  // Supprimer une compétence
+  removeCompetence: async (competenceId: number) => {
+    const response = await apiCall(`/profil-etudiant/competences/${competenceId}`, {
+      method: "DELETE",
     })
     return response.json()
   },
@@ -433,6 +566,264 @@ export const documentApi = {
   // Vérifier un document par UUID
   verify: async (uuid: string) => {
     const response = await fetch(`${API_URL}/documents/${uuid}/verify`)
+    return response.json()
+  },
+}
+
+// Service API pour le CV (expériences, formations, certifications)
+export const cvApi = {
+  // Obtenir toutes les données du CV
+  getAll: async () => {
+    const response = await apiCall("/cv")
+    return response.json()
+  },
+
+  // ========== EXPERIENCES ==========
+  
+  // Liste des expériences
+  getExperiences: async () => {
+    const response = await apiCall("/cv/experiences")
+    return response.json()
+  },
+
+  // Créer une expérience
+  createExperience: async (data: {
+    titre: string
+    entreprise: string
+    localisation?: string
+    date_debut: string
+    date_fin?: string
+    poste_actuel?: boolean
+    description?: string
+    realisations?: string[]
+  }) => {
+    const response = await apiCall("/cv/experiences", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+    return response.json()
+  },
+
+  // Mettre à jour une expérience
+  updateExperience: async (id: number, data: {
+    titre?: string
+    entreprise?: string
+    localisation?: string
+    date_debut?: string
+    date_fin?: string
+    poste_actuel?: boolean
+    description?: string
+    realisations?: string[]
+  }) => {
+    const response = await apiCall(`/cv/experiences/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+    return response.json()
+  },
+
+  // Supprimer une expérience
+  deleteExperience: async (id: number) => {
+    const response = await apiCall(`/cv/experiences/${id}`, {
+      method: "DELETE",
+    })
+    return response.json()
+  },
+
+  // ========== FORMATIONS ==========
+  
+  // Liste des formations
+  getFormations: async () => {
+    const response = await apiCall("/cv/formations")
+    return response.json()
+  },
+
+  // Créer une formation
+  createFormation: async (data: {
+    diplome: string
+    etablissement: string
+    localisation?: string
+    date_debut: string
+    date_fin?: string
+    en_cours?: boolean
+    description?: string
+  }) => {
+    const response = await apiCall("/cv/formations", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+    return response.json()
+  },
+
+  // Mettre à jour une formation
+  updateFormation: async (id: number, data: {
+    diplome?: string
+    etablissement?: string
+    localisation?: string
+    date_debut?: string
+    date_fin?: string
+    en_cours?: boolean
+    description?: string
+  }) => {
+    const response = await apiCall(`/cv/formations/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+    return response.json()
+  },
+
+  // Supprimer une formation
+  deleteFormation: async (id: number) => {
+    const response = await apiCall(`/cv/formations/${id}`, {
+      method: "DELETE",
+    })
+    return response.json()
+  },
+
+  // ========== CERTIFICATIONS ==========
+  
+  // Liste des certifications
+  getCertifications: async () => {
+    const response = await apiCall("/cv/certifications")
+    return response.json()
+  },
+
+  // Créer une certification
+  createCertification: async (data: {
+    nom: string
+    organisme: string
+    date_obtention: string
+    date_expiration?: string
+    identifiant?: string
+    url_verification?: string
+  }) => {
+    const response = await apiCall("/cv/certifications", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+    return response.json()
+  },
+
+  // Mettre à jour une certification
+  updateCertification: async (id: number, data: {
+    nom?: string
+    organisme?: string
+    date_obtention?: string
+    date_expiration?: string
+    identifiant?: string
+    url_verification?: string
+  }) => {
+    const response = await apiCall(`/cv/certifications/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+    return response.json()
+  },
+
+  // Supprimer une certification
+  deleteCertification: async (id: number) => {
+    const response = await apiCall(`/cv/certifications/${id}`, {
+      method: "DELETE",
+    })
+    return response.json()
+  },
+}
+
+// Service API pour les candidatures
+export const candidatureApi = {
+  // Liste des candidatures de l'étudiant
+  list: async (statut?: string) => {
+    const queryParams = new URLSearchParams()
+    if (statut) queryParams.append("statut", statut)
+    const response = await apiCall(`/candidatures?${queryParams.toString()}`)
+    return response.json()
+  },
+
+  // Obtenir une candidature spécifique
+  get: async (id: number) => {
+    const response = await apiCall(`/candidatures/${id}`)
+    return response.json()
+  },
+
+  // Créer une candidature (postuler à une offre)
+  create: async (data: {
+    offre_id: number
+    lettre_motivation?: string
+    cv_url?: string
+  }) => {
+    const response = await apiCall("/candidatures", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+    return response.json()
+  },
+
+  // Retirer/annuler une candidature
+  delete: async (id: number) => {
+    const response = await apiCall(`/candidatures/${id}`, {
+      method: "DELETE",
+    })
+    return response.json()
+  },
+
+  // Pour recruteurs : candidatures pour une offre
+  forOffre: async (offreId: number) => {
+    const response = await apiCall(`/candidatures/offre/${offreId}`)
+    return response.json()
+  },
+
+  // Pour recruteurs : mettre à jour le statut
+  updateStatus: async (id: number, data: {
+    statut: string
+    date_entretien?: string
+    feedback?: string
+    notes_recruteur?: string
+  }) => {
+    const response = await apiCall(`/candidatures/${id}/status`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+    return response.json()
+  },
+}
+
+// Service API pour les favoris
+export const favoriApi = {
+  // Liste des favoris
+  list: async () => {
+    const response = await apiCall("/favoris")
+    return response.json()
+  },
+
+  // Ajouter aux favoris
+  add: async (offreId: number) => {
+    const response = await apiCall("/favoris", {
+      method: "POST",
+      body: JSON.stringify({ offre_id: offreId }),
+    })
+    return response.json()
+  },
+
+  // Retirer des favoris
+  remove: async (offreId: number) => {
+    const response = await apiCall(`/favoris/${offreId}`, {
+      method: "DELETE",
+    })
+    return response.json()
+  },
+
+  // Toggle favori
+  toggle: async (offreId: number) => {
+    const response = await apiCall("/favoris/toggle", {
+      method: "POST",
+      body: JSON.stringify({ offre_id: offreId }),
+    })
+    return response.json()
+  },
+
+  // Vérifier si une offre est en favori
+  check: async (offreId: number) => {
+    const response = await apiCall(`/favoris/check/${offreId}`)
     return response.json()
   },
 }
