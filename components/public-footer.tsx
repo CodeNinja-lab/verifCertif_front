@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Shield, Linkedin, Twitter, Facebook, Instagram, Mail, Github } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Logo } from "@/components/logo"
 
 export function PublicFooter() {
   const currentYear = new Date().getFullYear()
@@ -12,18 +13,8 @@ export function PublicFooter() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           {/* Brand section */}
           <div className="lg:col-span-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
-                <Shield className="h-6 w-6 text-primary-foreground" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                  ACADYS
-                </span>
-                <span className="text-[10px] text-muted-foreground font-medium -mt-1">
-                  Academic Digital System
-                </span>
-              </div>
+            <div className="mb-4">
+              <Logo href="/" size="md" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed mb-6">
               Plateforme intelligente de certification numérique et de valorisation des documents académiques. 

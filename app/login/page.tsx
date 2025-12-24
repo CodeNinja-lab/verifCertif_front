@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Briefcase, Mail, Lock, Eye, EyeOff, ArrowRight, Shield, ArrowLeft } from "lucide-react"
+import { Logo } from "@/components/logo"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -103,14 +104,7 @@ export default function LoginPage() {
           </Link>
           
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group justify-center">
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center transition-transform group-hover:scale-105">
-              <Briefcase className="h-7 w-7 text-primary-foreground" />
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              ACADYS
-            </span>
-          </Link>
+          <Logo href="/" size="lg" className="justify-center" />
 
           {/* Header */}
           <div className="text-center space-y-2">

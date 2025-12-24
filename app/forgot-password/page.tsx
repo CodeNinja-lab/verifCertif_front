@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Briefcase, Mail, ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react"
+import { Logo } from "@/components/logo"
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
@@ -27,14 +28,7 @@ export default function ForgotPasswordPage() {
     return (
       <div className="min-h-screen flex items-center justify-center p-8 bg-gradient-to-br from-background via-primary/5 to-secondary/5">
         <div className="w-full max-w-md space-y-8">
-          <Link href="/" className="flex items-center gap-2 group justify-center">
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center transition-transform group-hover:scale-105">
-              <Briefcase className="h-7 w-7 text-primary-foreground" />
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              ACADYS
-            </span>
-          </Link>
+          <Logo href="/" size="lg" className="justify-center" />
 
           <div className="bg-card border border-border rounded-2xl p-8 shadow-xl text-center space-y-6">
             <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-secondary/10">
@@ -71,14 +65,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-8 bg-gradient-to-br from-background via-primary/5 to-secondary/5">
       <div className="w-full max-w-md space-y-8">
-        <Link href="/" className="flex items-center gap-2 group justify-center">
-          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center transition-transform group-hover:scale-105">
-            <Briefcase className="h-7 w-7 text-primary-foreground" />
-          </div>
-          <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            ACADYS
-          </span>
-        </Link>
+        <Logo href="/" size="lg" className="justify-center" />
 
         <div className="bg-card border border-border rounded-2xl p-8 shadow-xl space-y-6">
           <div className="text-center space-y-2">

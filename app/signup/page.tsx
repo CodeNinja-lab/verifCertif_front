@@ -3,6 +3,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Briefcase, Users, Building2, GraduationCap, ArrowRight, Check, ArrowLeft } from "lucide-react"
+import { Logo } from "@/components/logo"
 
 const userTypes = [
   {
@@ -47,14 +48,7 @@ export default function SignupPage() {
       {/* Header */}
       <header className="border-b border-border/40 bg-background/95 backdrop-blur">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 group w-fit">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center transition-transform group-hover:scale-105">
-              <Briefcase className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              ACADYS
-            </span>
-          </Link>
+          <Logo href="/" size="md" />
           <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
             Retour à l'accueil

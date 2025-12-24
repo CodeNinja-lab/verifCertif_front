@@ -16,6 +16,8 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { SidebarLogo } from "@/components/logo"
+import Image from "next/image"
 
 const navigation = [
   { name: "Accueil", href: "/", icon: Home },
@@ -43,11 +45,28 @@ export function UniversitySidebar() {
         <div className="flex h-16 items-center justify-between border-b border-border px-4">
           {!collapsed && (
             <Link href="/university" className="flex items-center gap-2 group">
-              <div className="h-8 w-8 relative flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
-                <GraduationCap className="h-5 w-5 text-white" />
+              <div className="h-8 w-8 relative flex-shrink-0 rounded-lg overflow-hidden bg-white shadow-sm">
+                <Image
+                  src="/logo-acadys.png"
+                  alt="ACADYS Logo"
+                  fill
+                  className="object-cover"
+                  priority
+                />
               </div>
-              <span className="font-semibold text-[#009EE0]">ACADYS</span>
+              <span className="font-semibold bg-gradient-to-r from-[#1e3a5f] to-[#3b82f6] bg-clip-text text-transparent">ACADYS</span>
             </Link>
+          )}
+          {collapsed && (
+            <div className="h-8 w-8 relative mx-auto rounded-lg overflow-hidden bg-white shadow-sm">
+              <Image
+                src="/logo-acadys.png"
+                alt="ACADYS Logo"
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
           )}
           <Button variant="ghost" size="icon" onClick={() => setCollapsed(!collapsed)} className="h-8 w-8">
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}

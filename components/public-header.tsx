@@ -20,6 +20,7 @@ import {
   Home
 } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { Logo } from "@/components/logo"
 
 export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -30,19 +31,7 @@ export function PublicHeader() {
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-x-6 p-4 lg:px-8" aria-label="Global">
         {/* Logo */}
         <div className="flex lg:flex-1">
-          <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-3 group">
-            <div className="h-11 w-11 relative flex items-center justify-center bg-gradient-to-br from-primary to-secondary rounded-xl shadow-lg group-hover:shadow-xl transition-shadow">
-              <Shield className="h-6 w-6 text-white" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                ACADYS
-              </span>
-              <span className="text-[10px] text-muted-foreground font-medium -mt-1">
-                Academic Digital System
-              </span>
-            </div>
-          </Link>
+          <Logo href="/" size="md" className="-m-1.5 p-1.5" />
         </div>
 
         {/* Mobile menu button */}

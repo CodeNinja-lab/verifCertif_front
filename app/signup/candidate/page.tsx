@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Briefcase, Mail, Lock, Eye, EyeOff, User, Phone, ArrowRight, ArrowLeft, GraduationCap } from "lucide-react"
+import { Logo } from "@/components/logo"
 
 export default function CandidateSignupPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -94,14 +95,7 @@ export default function CandidateSignupPage() {
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md space-y-8">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group justify-center">
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center transition-transform group-hover:scale-105">
-              <Briefcase className="h-7 w-7 text-primary-foreground" />
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              ACADYS
-            </span>
-          </Link>
+          <Logo href="/" size="lg" className="justify-center" />
 
           {/* Back button */}
           <Button variant="ghost" asChild className="w-fit">

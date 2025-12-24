@@ -17,6 +17,7 @@ import {
   Home,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { SidebarLogo } from "@/components/logo"
 // Import dynamique pour éviter le bundling côté serveur
 
 const navigation = [
@@ -51,15 +52,7 @@ export function CandidateSidebar() {
 
   return (
     <div className="flex h-full flex-col gap-y-5 border-r border-border bg-card px-6 py-8">
-      <div className="flex items-center gap-2">
-        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-          <Briefcase className="h-6 w-6 text-primary-foreground" />
-        </div>
-        <div>
-          <div className="text-sm font-semibold">ACADYS</div>
-          <div className="text-xs text-muted-foreground">Espace Candidat</div>
-        </div>
-      </div>
+      <SidebarLogo href="/candidate" subtitle="Espace Candidat" />
 
       <nav className="flex flex-1 flex-col gap-1">
         {navigation.map((item) => {

@@ -22,6 +22,8 @@ import {
   ArrowLeft,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { Logo } from "@/components/logo"
+import Image from "next/image"
 
 export default function VerifyPage() {
   const [certId, setCertId] = useState("")
@@ -96,14 +98,7 @@ export default function VerifyPage() {
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/5">
       <header className="border-b border-border/40 bg-background/95 backdrop-blur">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 group w-fit">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center transition-transform group-hover:scale-105">
-              <Briefcase className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              ACADYS
-            </span>
-          </Link>
+          <Logo href="/" size="md" />
           <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
             Retour à l'accueil
@@ -113,8 +108,14 @@ export default function VerifyPage() {
 
       <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="text-center space-y-6 mb-12">
-          <div className="inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-xl">
-            <Shield className="h-10 w-10 text-white" />
+          <div className="inline-block relative h-28 w-28 rounded-3xl overflow-hidden shadow-2xl ring-4 ring-white/50">
+            <Image
+              src="/logo-acadys.png"
+              alt="ACADYS Logo"
+              fill
+              className="object-cover"
+              priority
+            />
           </div>
           <div className="space-y-3">
             <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">Vérifier un diplôme</h1>
