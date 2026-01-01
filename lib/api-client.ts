@@ -40,6 +40,7 @@ async function apiCall(
     errorWithResponse.response = response
     errorWithResponse.status = response.status
     errorWithResponse.errors = error.errors || error.message
+    errorWithResponse.data = error
     throw errorWithResponse
   }
 
@@ -828,3 +829,70 @@ export const favoriApi = {
   },
 }
 
+// Service API pour les diplômes
+export const diplomeApi = {
+  // Liste des diplômes
+  list: async (params?: {
+    actif?: boolean
+    search?: string
+    sort_by?: string
+    sort_order?: "asc" | "desc"
+    per_page?: number
+  }) => {
+    const queryParams = new URLSearchParams()
+    if (params?.actif !== undefined) queryParams.append("actif", params.actif.toString())
+    if (params?.search) queryParams.append("search", params.search)
+    if (params?.sort_by) queryParams.append("sort_by", params.sort_by)
+    if (params?.sort_order) queryParams.append("sort_order", params.sort_order)
+    if (params?.per_page) queryParams.append("per_page", params.per_page.toString())
+
+    const response = await apiCall(`/diplomes?${queryParams.toString()}`)
+    return response.json()
+  },
+
+  // Obtenir un diplôme
+  get: async (id: number | string) => {
+    const response = await apiCall(`/diplomes/${id}`)
+    return response.json()
+  },
+
+  // Créer un diplôme
+  create: async (data: {
+    nom: string
+    description?: string
+    code?: string
+    actif?: boolean
+    ordre?: number
+    competences: number[]
+  }) => {
+    const response = await apiCall("/diplomes", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+    return response.json()
+  },
+
+  // Mettre à jour un diplôme
+  update: async (id: number | string, data: {
+    nom?: string
+    description?: string
+    code?: string
+    actif?: boolean
+    ordre?: number
+    competences?: number[]
+  }) => {
+    const response = await apiCall(`/diplomes/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+    return response.json()
+  },
+
+  // Supprimer un diplôme
+  delete: async (id: number | string) => {
+    const response = await apiCall(`/diplomes/${id}`, {
+      method: "DELETE",
+    })
+    return response.json()
+  },
+}

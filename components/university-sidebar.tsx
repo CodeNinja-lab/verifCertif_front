@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Home,
+  BookOpen,
 } from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -24,6 +25,7 @@ const navigation = [
   { name: "Tableau de bord", href: "/university", icon: LayoutDashboard },
   { name: "Étudiants", href: "/university/students", icon: Users },
   { name: "Diplômes", href: "/university/degrees", icon: GraduationCap },
+  { name: "Configuration Diplômes", href: "/university/diplomas", icon: BookOpen },
   { name: "Certifications", href: "/university/certifications", icon: Award },
   { name: "Vérifications", href: "/university/verifications", icon: FileCheck },
   { name: "Paramètres", href: "/university/settings", icon: Settings },

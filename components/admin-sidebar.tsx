@@ -18,7 +18,6 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SidebarLogo } from "@/components/logo"
-// Import dynamique pour éviter le bundling côté serveur
 
 const navigation = [
   { name: "Accueil", href: "/", icon: Home },

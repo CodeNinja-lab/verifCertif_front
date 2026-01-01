@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,12 +12,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Upload, FileCheck, Hash, Shield, QrCode, CheckCircle2, AlertCircle } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import Link from "next/link"
+import { diplomeApi, profilEtudiantApi } from "@/lib/api-client"
+import { Badge } from "@/components/ui/badge"
+
+interface Diplome {
+  id: number
+  nom: string
+  description?: string
+  code?: string
+  competences?: Array<{ id: number; nom: string; categorie: string }>
+}
 
 export default function NewCertificationPage() {
   const [step, setStep] = useState(1)
   const [file, setFile] = useState<File | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [diplomaSource, setDiplomaSource] = useState<"existing" | "generate" | "">("")
+  const [diplomes, setDiplomes] = useState<Diplome[]>([])
+  const [selectedDiplomeId, setSelectedDiplomeId] = useState<string>("")
+  const [selectedDiplome, setSelectedDiplome] = useState<Diplome | null>(null)
+  const [loadingDiplomes, setLoadingDiplomes] = useState(false)
   const [certificationData, setCertificationData] = useState({
     studentId: "",
     studentName: "",
@@ -29,6 +43,43 @@ export default function NewCertificationPage() {
     notes: "",
   })
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    loadDiplomes()
+  }, [])
+
+  useEffect(() => {
+    if (selectedDiplomeId) {
+      loadDiplomeDetails(selectedDiplomeId)
+    } else {
+      setSelectedDiplome(null)
+    }
+  }, [selectedDiplomeId])
+
+  const loadDiplomes = async () => {
+    try {
+      setLoadingDiplomes(true)
+      const response = await diplomeApi.list({ actif: true, per_page: 100 })
+      setDiplomes(response.data || [])
+    } catch (error: any) {
+      console.error("Erreur lors du chargement des diplômes:", error)
+    } finally {
+      setLoadingDiplomes(false)
+    }
+  }
+
+  const loadDiplomeDetails = async (id: string) => {
+    try {
+      const response = await diplomeApi.get(id)
+      setSelectedDiplome(response.data || response)
+      // Mettre à jour automatiquement le titre du diplôme si vide
+      if (!certificationData.degreeTitle && response.data?.nom) {
+        setCertificationData({ ...certificationData, degreeTitle: response.data.nom })
+      }
+    } catch (error: any) {
+      console.error("Erreur lors du chargement des détails du diplôme:", error)
+    }
+  }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
@@ -99,6 +150,7 @@ export default function NewCertificationPage() {
         grade: certificationData.grade,
         notes: certificationData.notes,
         diploma_source: diplomaSource,
+        diplome_id: selectedDiplomeId ? parseInt(selectedDiplomeId) : null, // Ajouter l'ID du diplôme sélectionné
       }
       formData.append("metadata", JSON.stringify(metadata))
 
@@ -166,6 +218,9 @@ export default function NewCertificationPage() {
       const result = await response.json()
       console.log("Certification completed:", result)
       
+      // Les compétences sont maintenant liées automatiquement côté backend
+      // lors de la création du document si un diplôme a été sélectionné
+      
       // Stocker les infos du document pour l'étape 3
       localStorage.setItem("lastCertifiedDocument", JSON.stringify(result.document))
       
@@ -212,6 +267,24 @@ export default function NewCertificationPage() {
                   </div>
                 </CardContent>
               </Card>
+
+              {selectedDiplome && selectedDiplome.competences && selectedDiplome.competences.length > 0 && (
+                <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+                  <CardContent className="p-6">
+                    <h3 className="font-semibold mb-3 text-blue-900 dark:text-blue-100">Compétences Certifiées</h3>
+                    <p className="text-sm text-blue-700 dark:text-blue-300 mb-4">
+                      Les compétences suivantes ont été automatiquement liées au profil de l'étudiant :
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedDiplome.competences.map((comp) => (
+                        <Badge key={comp.id} variant="secondary" className="bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100">
+                          {comp.nom}
+                        </Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               <div className="flex items-center justify-center gap-3 pt-4">
                 <Button variant="outline" asChild>
@@ -335,7 +408,54 @@ export default function NewCertificationPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="diplomaSource">Type de diplôme *</Label>
+              <Label htmlFor="diplome">Diplôme *</Label>
+              <Select
+                value={selectedDiplomeId}
+                onValueChange={(value) => {
+                  setSelectedDiplomeId(value)
+                  if (value) {
+                    const diplome = diplomes.find((d) => d.id.toString() === value)
+                    if (diplome) {
+                      setSelectedDiplome(diplome)
+                      setCertificationData({ ...certificationData, degreeTitle: diplome.nom })
+                    }
+                  } else {
+                    setSelectedDiplome(null)
+                  }
+                }}
+                disabled={loadingDiplomes}
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={loadingDiplomes ? "Chargement..." : "Sélectionner un diplôme"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {diplomes.map((diplome) => (
+                    <SelectItem key={diplome.id} value={diplome.id.toString()}>
+                      {diplome.nom} {diplome.code && `(${diplome.code})`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Sélectionnez le diplôme à certifier. Les compétences associées seront automatiquement liées au profil de l'étudiant.
+              </p>
+              {selectedDiplome && selectedDiplome.competences && selectedDiplome.competences.length > 0 && (
+                <div className="mt-2 p-3 bg-muted/50 rounded-lg">
+                  <p className="text-sm font-medium mb-2">Compétences qui seront certifiées :</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedDiplome.competences.map((comp) => (
+                      <Badge key={comp.id} variant="secondary">
+                        {comp.nom}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="diplomaSource">Source du document *</Label>
               <Select
                 value={diplomaSource}
                 onValueChange={(value: "existing" | "generate") => setDiplomaSource(value)}
@@ -465,7 +585,7 @@ export default function NewCertificationPage() {
               </Button>
               <Button
                 onClick={() => setStep(2)}
-                disabled={!diplomaSource}
+                disabled={!diplomaSource || !selectedDiplomeId}
                 className="bg-gradient-to-r from-purple-500 to-pink-600 hover:opacity-90"
               >
                 Continuer
