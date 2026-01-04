@@ -405,17 +405,17 @@ export default function NewJobPage() {
           <p className="text-muted-foreground mt-1">Remplissez les détails de votre offre d'emploi</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button variant="outline" disabled>
             <Eye className="mr-2 h-4 w-4" />
             Prévisualiser
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => handleSubmit(false)} disabled={loading}>
             <Save className="mr-2 h-4 w-4" />
-            Enregistrer brouillon
+            {loading ? 'Enregistrement...' : 'Enregistrer brouillon'}
           </Button>
-          <Button className="bg-gradient-to-r from-secondary to-primary">
+          <Button className="bg-gradient-to-r from-secondary to-primary" onClick={() => handleSubmit(true)} disabled={loading}>
             <Send className="mr-2 h-4 w-4" />
-            Publier l'offre
+            {loading ? 'Publication...' : 'Publier l\'offre'}
           </Button>
         </div>
       </div>

@@ -16,24 +16,60 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export default function JobsPage() {
   const [showFilters, setShowFilters] = useState(true)
   const [salaryRange, setSalaryRange] = useState([300, 1000])
+  const [jobs, setJobs] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const jobs = [
+  useEffect(() => {
+    loadJobs()
+  }, [])
+
+  const loadJobs = async () => {
+    try {
+      setLoading(true)
+      const { offreApi } = await import("@/lib/api-client")
+      const data = await offreApi.list({ statut: 'PUBLIEE', per_page: 50 })
+      const offres = data.data || []
+      setJobs(offres.map((offre: any) => ({
+        id: offre.id,
+        title: offre.titre,
+        company: offre.entreprise,
+        logo: offre.entreprise?.charAt(0) || "💼",
+        location: offre.lieu,
+        type: offre.type_contrat,
+        remote: offre.teletravail === 'total' ? 'Full Remote' : offre.teletravail === 'partiel' ? 'Hybride' : 'Présentiel',
+        salary: offre.salaire_min && offre.salaire_max ? `${offre.salaire_min/1000}k-${offre.salaire_max/1000}k FCFA` : 'Selon profil',
+        posted: new Date(offre.created_at).toLocaleDateString('fr-FR'),
+        featured: false,
+        urgent: false,
+        match: 0,
+        skills: offre.offre_competences?.map((oc: any) => oc.competence?.nom).filter(Boolean) || [],
+        description: offre.description || '',
+      })))
+    } catch (error) {
+      console.error('Erreur chargement offres:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <PublicHeader />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">Chargement des offres...</div>
+        </main>
+        <PublicFooter />
+      </div>
+    )
+  }
+
+  const jobsToDisplay = jobs.length > 0 ? jobs : [
     {
       id: 1,
-      title: "Développeur Full-Stack Senior",
-      company: "Entreprise Sénégal",
-      logo: "🚀",
-      location: "Dakar, Sénégal",
-      type: "CDI",
-      remote: "Hybride",
-      salary: "800k-1.2M FCFA",
-      posted: "2 jours",
-      featured: true,
-      urgent: false,
-      match: 95,
-      skills: ["React", "Node.js", "TypeScript", "AWS"],
-      description: "Rejoignez une équipe passionnée pour développer des applications web innovantes...",
-    },
+      title: "Aucune offre disponible",
+      company: "VeriCertis",
+      logo: "💼",
     {
       id: 2,
       title: "Lead Frontend Developer",

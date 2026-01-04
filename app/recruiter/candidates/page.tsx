@@ -45,14 +45,54 @@ function CandidatesPage() {
   const loadCandidates = async () => {
     try {
       setLoading(true)
-      const { offreApi } = await import("@/lib/api-client")
+      const { offreApi, candidatureApi } = await import("@/lib/api-client")
       // Charger toutes les offres du recruteur
       const offresData = await offreApi.list({ my_offres: true })
       setOffres(offresData.data || [])
       
-      // Pour chaque offre, charger les matchings
+      // Pour chaque offre, charger les candidatures ET les matchings
       const candidatesList: any[] = []
       for (const offre of offresData.data || []) {
+        // Charger les vraies candidatures d'abord
+        try {
+          const candidaturesData = await candidatureApi.forOffre(offre.id)
+          const candidatures = candidaturesData.data || []
+          for (const candidature of candidatures) {
+            if (candidature.etudiant) {
+              const profil = candidature.etudiant.profil_etudiant || {}
+              const experienceYears = profil.annees_experience || 0
+              const experienceText = experienceYears === 0 ? "0-2 ans" : 
+                                    experienceYears <= 2 ? "0-2 ans" :
+                                    experienceYears <= 5 ? "3-5 ans" :
+                                    experienceYears <= 10 ? "5-10 ans" : "10+ ans"
+              
+              candidatesList.push({
+                id: candidature.id,
+                etudiantId: candidature.etudiant_id,
+                name: candidature.etudiant.name || `${candidature.etudiant.prenom || ''} ${candidature.etudiant.nom || ''}`.trim(),
+                title: profil.titre_profil || "Candidat",
+                location: profil.localisation || "Non spécifié",
+                experience: `${experienceYears} ans`,
+                experienceYears: experienceYears,
+                experienceText: experienceText,
+                education: profil.niveau_etudes || "Non spécifié",
+                skills: [], // Les compétences seront chargées du profil
+                match: 0, // Pas de score pour les candidatures directes
+                salary: profil.salaire_souhaite ? `${profil.salaire_souhaite} FCFA` : "",
+                available: candidature.disponibilite || "À discuter",
+                rating: 4.5,
+                candidature: candidature,
+                offre: offre,
+                dateMatching: candidature.date_candidature || candidature.created_at,
+                type: 'candidature' // Marqueur pour identifier les vraies candidatures
+              })
+            }
+          }
+        } catch (error) {
+          console.error(`Erreur lors du chargement des candidatures pour l'offre ${offre.id}:`, error)
+        }
+
+        // Ensuite charger les matchings
         try {
           const matchingsData = await offreApi.getMatchings(offre.id, { per_page: 100 })
           const matchings = matchingsData.data || matchingsData || []
@@ -402,10 +442,16 @@ function CandidatesPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3 mb-1">
                         <h3 className="font-bold text-xl">{candidate.name}</h3>
-                        <Badge className="bg-primary/10 text-primary border-primary/20">
-                          <Target className="mr-1 h-3 w-3" />
-                          {candidate.match}% match
-                        </Badge>
+                        {candidate.type === 'candidature' ? (
+                          <Badge className="bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400">
+                            ✓ A postulé
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-primary/10 text-primary border-primary/20">
+                            <Target className="mr-1 h-3 w-3" />
+                            {candidate.match}% match
+                          </Badge>
+                        )}
                         <div className="flex items-center gap-1">
                           <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                           <span className="text-sm font-semibold">{candidate.rating}</span>

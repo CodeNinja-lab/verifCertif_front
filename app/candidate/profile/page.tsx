@@ -46,6 +46,8 @@ interface ProfilCompetence {
   }
   niveau: string | null
   annees_experience: number | null
+  source: string | null
+  validee_par_etudiant: boolean
 }
 
 interface Competence {
@@ -399,41 +401,83 @@ export default function CandidateProfile() {
       {/* Skills */}
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Compétences</h2>
-        <div className="space-y-4">
-          <div className="flex flex-wrap gap-2">
-            {skills.map((skill) => (
-              <Badge key={skill.competence_id} variant="secondary" className="text-sm px-3 py-1.5">
-                {skill.competence?.nom || "Compétence"}
-                <button onClick={() => removeSkill(skill.competence_id, skill.competence?.nom || "")} className="ml-2 hover:text-destructive transition-colors">
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            ))}
-          </div>
-          <div className="flex gap-2 relative">
-            <Input
-              placeholder="Rechercher une compétence"
-              value={newSkill ?? ""}
-              onChange={(e) => handleSkillSearch(e.target.value)}
-              onFocus={() => newSkill && setShowCompetenceDropdown(true)}
-              onBlur={() => setTimeout(() => setShowCompetenceDropdown(false), 200)}
-            />
-            <Button variant="outline" disabled>
-              <Plus className="h-4 w-4" />
-            </Button>
-            {showCompetenceDropdown && filteredCompetences.length > 0 && (
-              <div className="absolute top-full left-0 right-12 mt-1 bg-background border rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
-                {filteredCompetences.slice(0, 10).map((competence) => (
-                  <button
-                    key={competence.id}
-                    className="w-full text-left px-4 py-2 hover:bg-muted transition-colors"
-                    onClick={() => addSkill(competence)}
-                  >
-                    {competence.nom}
-                  </button>
-                ))}
+        <div className="space-y-6">
+          {/* Compétences certifiées */}
+          {skills.filter(s => s.source === 'diplome' || s.source === 'certification' || s.source === 'document').length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-green-600">Compétences certifiées</h3>
+                <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                  Vérifié
+                </Badge>
               </div>
-            )}
+              <div className="flex flex-wrap gap-2">
+                {skills
+                  .filter(s => s.source === 'diplome' || s.source === 'certification' || s.source === 'document')
+                  .map((skill) => (
+                    <Badge key={skill.competence_id} className="text-sm px-3 py-1.5 bg-green-100 text-green-800 hover:bg-green-200">
+                      {skill.competence?.nom || "Compétence"}
+                      <button onClick={() => removeSkill(skill.competence_id, skill.competence?.nom || "")} className="ml-2 hover:text-destructive transition-colors">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {/* Compétences non certifiées */}
+          {skills.filter(s => s.source === 'manuel' || !s.source).length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-600">Compétences déclarées</h3>
+                <Badge variant="outline" className="text-xs bg-gray-50 text-gray-600 border-gray-200">
+                  Non vérifié
+                </Badge>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {skills
+                  .filter(s => s.source === 'manuel' || !s.source)
+                  .map((skill) => (
+                    <Badge key={skill.competence_id} variant="secondary" className="text-sm px-3 py-1.5">
+                      {skill.competence?.nom || "Compétence"}
+                      <button onClick={() => removeSkill(skill.competence_id, skill.competence?.nom || "")} className="ml-2 hover:text-destructive transition-colors">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {/* Ajouter une nouvelle compétence */}
+          <div className="space-y-2 pt-2 border-t">
+            <Label className="text-sm font-medium">Ajouter une compétence</Label>
+            <div className="flex gap-2 relative">
+              <Input
+                placeholder="Rechercher une compétence"
+                value={newSkill ?? ""}
+                onChange={(e) => handleSkillSearch(e.target.value)}
+                onFocus={() => newSkill && setShowCompetenceDropdown(true)}
+                onBlur={() => setTimeout(() => setShowCompetenceDropdown(false), 200)}
+              />
+              <Button variant="outline" disabled>
+                <Plus className="h-4 w-4" />
+              </Button>
+              {showCompetenceDropdown && filteredCompetences.length > 0 && (
+                <div className="absolute top-full left-0 right-12 mt-1 bg-background border rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
+                  {filteredCompetences.slice(0, 10).map((competence) => (
+                    <button
+                      key={competence.id}
+                      className="w-full text-left px-4 py-2 hover:bg-muted transition-colors"
+                      onClick={() => addSkill(competence)}
+                    >
+                      {competence.nom}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </Card>
