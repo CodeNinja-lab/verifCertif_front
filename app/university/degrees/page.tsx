@@ -1,67 +1,111 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Search, Filter, Plus, FileCheck, Clock, Award, Download, Eye, QrCode } from "lucide-react"
+import { Search, Filter, Plus, FileCheck, Clock, Award, Download, Eye, QrCode, Loader2 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
+import { documentApi } from "@/lib/api-client"
+import { useToast } from "@/hooks/use-toast"
 
-const degrees = [
-  {
-    id: "DEG-2024-001",
-    student: "Sophie Martin",
-    degree: "Master en Informatique",
-    date: "2024-06-15",
-    status: "certified",
-    hash: "a3f5e8c2d1b4f7e9c8d5a2b6f3e1d4c7",
-    verifications: 12,
-  },
-  {
-    id: "DEG-2024-002",
-    student: "Thomas Dubois",
-    degree: "Licence en Mathématiques",
-    date: "2024-06-14",
-    status: "certified",
-    hash: "b6d2c4e1f8a5d3c9e7b4f2a6d8c5e1f3",
-    verifications: 8,
-  },
-  {
-    id: "DEG-2024-003",
-    student: "Marie Laurent",
-    degree: "Doctorat en Physique",
-    date: "2024-06-13",
-    status: "pending",
-    hash: null,
-    verifications: 0,
-  },
-  {
-    id: "DEG-2024-004",
-    student: "Pierre Bernard",
-    degree: "Master en Économie",
-    date: "2024-06-12",
-    status: "certified",
-    hash: "c8e4d2b5f7a9c3e1d6b8f4a2e5c9d7b1",
-    verifications: 5,
-  },
-  {
-    id: "DEG-2024-005",
-    student: "Julie Petit",
-    degree: "Licence en Droit",
-    date: "2024-06-11",
-    status: "pending",
-    hash: null,
-    verifications: 0,
-  },
-]
+interface Document {
+  id: number
+  uuid_document: string
+  titre: string
+  type_document: string
+  date_emission: string
+  statut: string
+  hash_sha256: string | null
+  blockchain_tx_hash: string | null
+  etudiant: {
+    id: number
+    prenom: string
+    nom: string
+  }
+  verification_count?: number
+}
 
 export default function DegreesPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [filterStatus, setFilterStatus] = useState("all")
+  const [documents, setDocuments] = useState<Document[]>([])
+  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState({
+    total: 0,
+    certified: 0,
+    pending: 0,
+    verifications: 0,
+  })
+  const { toast } = useToast()
+
+  useEffect(() => {
+    loadDocuments()
+  }, [])
+
+  const loadDocuments = async () => {
+    try {
+      setLoading(true)
+      const response = await documentApi.list({
+        type_document: "diplome",
+      })
+
+      const docs = response.data || []
+      setDocuments(docs)
+
+      // Calculate stats
+      const total = docs.length
+      const certified = docs.filter((d: Document) => d.statut === "ACTIF").length
+      const pending = docs.filter((d: Document) => d.statut === "EN_ATTENTE" || d.statut === "BROUILLON").length
+      const verifications = docs.reduce((sum: number, d: Document) => sum + (d.verification_count || 0), 0)
+
+      setStats({ total, certified, pending, verifications })
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de charger les diplômes",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const filteredDocuments = documents.filter((doc) => {
+    const matchesSearch =
+      searchQuery === "" ||
+      doc.titre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      `${doc.etudiant?.prenom} ${doc.etudiant?.nom}`.toLowerCase().includes(searchQuery.toLowerCase())
+
+    const matchesStatus =
+      filterStatus === "all" ||
+      (filterStatus === "certified" && doc.statut === "ACTIF") ||
+      (filterStatus === "pending" && (doc.statut === "EN_ATTENTE" || doc.statut === "BROUILLON"))
+
+    return matchesSearch && matchesStatus
+  })
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr)
+    return date.toLocaleDateString("fr-FR")
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6 p-6">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center space-y-4">
+            <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+            <p className="text-muted-foreground">Chargement des diplômes...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 p-6">
@@ -84,7 +128,7 @@ export default function DegreesPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Total diplômes</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3,256</div>
+            <div className="text-2xl font-bold">{stats.total}</div>
           </CardContent>
         </Card>
         <Card>
@@ -92,7 +136,7 @@ export default function DegreesPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Certifiés</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">2,891</div>
+            <div className="text-2xl font-bold text-green-600">{stats.certified}</div>
           </CardContent>
         </Card>
         <Card>
@@ -100,7 +144,7 @@ export default function DegreesPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">En attente</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">365</div>
+            <div className="text-2xl font-bold text-orange-600">{stats.pending}</div>
           </CardContent>
         </Card>
         <Card>
@@ -108,7 +152,7 @@ export default function DegreesPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Vérifications</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,423</div>
+            <div className="text-2xl font-bold">{stats.verifications}</div>
           </CardContent>
         </Card>
       </div>
@@ -158,66 +202,78 @@ export default function DegreesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {degrees.map((degree) => (
-                <TableRow key={degree.id}>
-                  <TableCell className="font-mono text-sm">{degree.id}</TableCell>
-                  <TableCell className="font-medium">{degree.student}</TableCell>
-                  <TableCell>{degree.degree}</TableCell>
-                  <TableCell>{degree.date}</TableCell>
-                  <TableCell>
-                    {degree.hash ? (
-                      <code className="text-xs bg-muted px-2 py-1 rounded">{degree.hash.substring(0, 12)}...</code>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{degree.verifications}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    {degree.status === "certified" ? (
-                      <Badge className="bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400">
-                        <FileCheck className="mr-1 h-3 w-3" />
-                        Certifié
-                      </Badge>
-                    ) : (
-                      <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400">
-                        <Clock className="mr-1 h-3 w-3" />
-                        En attente
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          Actions
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Eye className="mr-2 h-4 w-4" />
-                          Voir les détails
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Download className="mr-2 h-4 w-4" />
-                          Télécharger PDF
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <QrCode className="mr-2 h-4 w-4" />
-                          Voir QR Code
-                        </DropdownMenuItem>
-                        {degree.status === "pending" && (
-                          <DropdownMenuItem>
-                            <Award className="mr-2 h-4 w-4" />
-                            Certifier maintenant
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+              {filteredDocuments.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                    Aucun diplôme trouvé
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredDocuments.map((doc) => (
+                  <TableRow key={doc.id}>
+                    <TableCell className="font-mono text-sm">{doc.uuid_document}</TableCell>
+                    <TableCell className="font-medium">
+                      {doc.etudiant ? `${doc.etudiant.prenom} ${doc.etudiant.nom}` : "N/A"}
+                    </TableCell>
+                    <TableCell>{doc.titre}</TableCell>
+                    <TableCell>{formatDate(doc.date_emission)}</TableCell>
+                    <TableCell>
+                      {doc.blockchain_tx_hash ? (
+                        <code className="text-xs bg-muted px-2 py-1 rounded">
+                          {doc.blockchain_tx_hash.substring(0, 12)}...
+                        </code>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{doc.verification_count || 0}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      {doc.statut === "ACTIF" ? (
+                        <Badge className="bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400">
+                          <FileCheck className="mr-1 h-3 w-3" />
+                          Certifié
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400">
+                          <Clock className="mr-1 h-3 w-3" />
+                          En attente
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            Actions
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/university/certifications/${doc.id}`}>
+                              <Eye className="mr-2 h-4 w-4" />
+                              Voir les détails
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL}/storage/${doc.uuid_document}`, "_blank")}
+                          >
+                            <Download className="mr-2 h-4 w-4" />
+                            Télécharger PDF
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/verify/${doc.uuid_document}`}>
+                              <QrCode className="mr-2 h-4 w-4" />
+                              Voir QR Code
+                            </Link>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>
