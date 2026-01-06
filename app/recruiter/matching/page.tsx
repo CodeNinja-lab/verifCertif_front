@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Sparkles,
   Star,
@@ -22,22 +23,30 @@ import {
   CheckCircle2,
   Search,
   Filter,
+  Users,
+  Loader2,
+  Calendar,
+  FileText,
 } from "lucide-react"
-// Import dynamique pour éviter le bundling côté serveur
+import { useToast } from "@/hooks/use-toast"
 
 export default function RecruiterMatchingPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const offreId = searchParams.get("offre")
   const [searchQuery, setSearchQuery] = useState("")
-  const [filterPosition, setFilterPosition] = useState("all")
+  const [filterStatus, setFilterStatus] = useState("all")
   const [matchings, setMatchings] = useState<any[]>([])
+  const [candidatures, setCandidatures] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingCandidatures, setLoadingCandidatures] = useState(true)
   const [offre, setOffre] = useState<any>(null)
+  const { toast } = useToast()
 
   useEffect(() => {
     if (offreId) {
       loadMatchings()
+      loadCandidatures()
       loadOffre()
     }
   }, [offreId])
@@ -62,6 +71,37 @@ export default function RecruiterMatchingPage() {
       console.error("Erreur lors du chargement des matchings:", error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadCandidatures = async () => {
+    try {
+      setLoadingCandidatures(true)
+      const { candidatureApi } = await import("@/lib/api-client")
+      const data = await candidatureApi.forOffre(offreId!)
+      setCandidatures(data.data || [])
+    } catch (error) {
+      console.error("Erreur lors du chargement des candidatures:", error)
+    } finally {
+      setLoadingCandidatures(false)
+    }
+  }
+
+  const updateCandidatureStatus = async (candidatureId: number, newStatus: string) => {
+    try {
+      const { candidatureApi } = await import("@/lib/api-client")
+      await candidatureApi.updateStatus(candidatureId, { statut: newStatus })
+      toast({
+        title: "Succès",
+        description: "Statut de la candidature mis à jour",
+      })
+      loadCandidatures()
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de mettre à jour le statut",
+        variant: "destructive",
+      })
     }
   }
 
@@ -96,6 +136,32 @@ export default function RecruiterMatchingPage() {
         <div className="text-center">Chargement...</div>
       </div>
     )
+  }
+
+  const filteredCandidatures = candidatures.filter((candidature: any) => {
+    const matchesSearch = searchQuery === "" || 
+      `${candidature.etudiant?.prenom} ${candidature.etudiant?.nom}`.toLowerCase().includes(searchQuery.toLowerCase())
+    
+    const matchesStatus = filterStatus === "all" || candidature.statut === filterStatus
+    
+    return matchesSearch && matchesStatus
+  })
+
+  const getStatusBadge = (statut: string) => {
+    const statusMap: Record<string, { label: string; variant: any; color: string }> = {
+      envoyee: { label: "Envoyée", variant: "secondary", color: "bg-blue-100 text-blue-700" },
+      vue: { label: "Vue", variant: "outline", color: "bg-purple-100 text-purple-700" },
+      en_cours: { label: "En cours", variant: "default", color: "bg-yellow-100 text-yellow-700" },
+      entretien: { label: "Entretien", variant: "default", color: "bg-orange-100 text-orange-700" },
+      acceptee: { label: "Acceptée", variant: "default", color: "bg-green-100 text-green-700" },
+      refusee: { label: "Refusée", variant: "destructive", color: "bg-red-100 text-red-700" },
+    }
+    return statusMap[statut] || statusMap.envoyee
+  }
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr)
+    return date.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })
   }
 
   const filteredMatchings = matchings.filter((matching: any) => {
@@ -142,76 +208,89 @@ export default function RecruiterMatchingPage() {
         </Button>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Candidats matchés</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{matchedCandidates.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">Pour ce poste</p>
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="ai" className="space-y-6">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="ai" className="gap-2">
+            <Brain className="h-4 w-4" />
+            Recommandations IA ({matchedCandidates.length})
+          </TabsTrigger>
+          <TabsTrigger value="candidatures" className="gap-2">
+            <Users className="h-4 w-4" />
+            Candidatures directes ({candidatures.length})
+          </TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Match moyen</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-secondary">
-              {matchedCandidates.length > 0 
-                ? Math.round(matchedCandidates.reduce((acc: number, c: any) => acc + c.matchScore, 0) / matchedCandidates.length)
-                : 0}%
-            </div>
-          </CardContent>
-        </Card>
+        <TabsContent value="ai" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Candidats matchés</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{matchedCandidates.length}</div>
+                <p className="text-xs text-muted-foreground mt-1">Pour ce poste</p>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Disponibles</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {matchedCandidates.filter((c: any) => c.availability === "Disponible").length}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Immédiatement</p>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Match moyen</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-secondary">
+                  {matchedCandidates.length > 0 
+                    ? Math.round(matchedCandidates.reduce((acc: number, c: any) => acc + c.matchScore, 0) / matchedCandidates.length)
+                    : 0}%
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Vus</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {matchings.filter((m: any) => m.vu_par_recruteur).length}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Candidats consultés</p>
-          </CardContent>
-        </Card>
-      </div>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Disponibles</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {matchedCandidates.filter((c: any) => c.availability === "Disponible").length}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Immédiatement</p>
+              </CardContent>
+            </Card>
 
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Rechercher par nom, compétences..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-            </div>
-            <Select value={filterPosition} onValueChange={setFilterPosition}>
-              <SelectTrigger className="w-[200px]">
-                <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Poste" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les postes</SelectItem>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Vus</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {matchings.filter((m: any) => m.vu_par_recruteur).length}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Candidats consultés</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Rechercher par nom, compétences..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                </div>
+                <Select value={filterPosition} onValueChange={setFilterPosition}>
+                  <SelectTrigger className="w-[200px]">
+                    <Filter className="mr-2 h-4 w-4" />
+                    <SelectValue placeholder="Poste" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les postes</SelectItem>
                 <SelectItem value="senior">Senior</SelectItem>
                 <SelectItem value="junior">Junior</SelectItem>
               </SelectContent>
@@ -336,6 +415,227 @@ export default function RecruiterMatchingPage() {
           ))
         )}
       </div>
+        </TabsContent>
+
+        <TabsContent value="candidatures" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total candidatures</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{candidatures.length}</div>
+                <p className="text-xs text-muted-foreground mt-1">Pour ce poste</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Nouvelles</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-blue-600">
+                  {candidatures.filter((c: any) => c.statut === "envoyee").length}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">À examiner</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">En cours</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-yellow-600">
+                  {candidatures.filter((c: any) => ["vue", "en_cours", "entretien"].includes(c.statut)).length}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">En traitement</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Acceptées</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">
+                  {candidatures.filter((c: any) => c.statut === "acceptee").length}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Finalisées</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Rechercher par nom..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                </div>
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger className="w-[200px]">
+                    <Filter className="mr-2 h-4 w-4" />
+                    <SelectValue placeholder="Statut" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les statuts</SelectItem>
+                    <SelectItem value="envoyee">Nouvelles</SelectItem>
+                    <SelectItem value="vue">Vues</SelectItem>
+                    <SelectItem value="en_cours">En cours</SelectItem>
+                    <SelectItem value="entretien">Entretien</SelectItem>
+                    <SelectItem value="acceptee">Acceptées</SelectItem>
+                    <SelectItem value="refusee">Refusées</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="space-y-4">
+            {loadingCandidatures ? (
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <Loader2 className="h-8 w-8 animate-spin mx-auto text-secondary" />
+                  <p className="text-muted-foreground mt-2">Chargement des candidatures...</p>
+                </CardContent>
+              </Card>
+            ) : filteredCandidatures.length === 0 ? (
+              <Card>
+                <CardContent className="p-6 text-center text-muted-foreground">
+                  Aucune candidature pour cette offre
+                </CardContent>
+              </Card>
+            ) : (
+              filteredCandidatures.map((candidature: any) => {
+                const statusBadge = getStatusBadge(candidature.statut)
+                const etudiant = candidature.etudiant
+                const profile = etudiant?.profil_etudiant
+
+                return (
+                  <Card key={candidature.id} className="hover:shadow-lg transition-all">
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-6">
+                        <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                          <span className="text-xl font-bold text-white">
+                            {etudiant?.prenom?.[0]}{etudiant?.nom?.[0]}
+                          </span>
+                        </div>
+
+                        <div className="flex-1 space-y-4">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h3 className="text-xl font-bold mb-1">
+                                {etudiant?.prenom} {etudiant?.nom}
+                              </h3>
+                              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                                <Mail className="h-3 w-3" />
+                                {etudiant?.email}
+                              </p>
+                              {profile?.numero_etudiant && (
+                                <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
+                                  <Users className="h-3 w-3" />
+                                  ID: {profile.numero_etudiant}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex flex-col items-end gap-2">
+                              <Badge className={statusBadge.color}>
+                                {statusBadge.label}
+                              </Badge>
+                              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {formatDate(candidature.date_candidature)}
+                              </p>
+                            </div>
+                          </div>
+
+                          {candidature.lettre_motivation && (
+                            <div className="bg-muted/50 p-4 rounded-lg">
+                              <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                                <FileText className="h-4 w-4" />
+                                Lettre de motivation
+                              </p>
+                              <p className="text-sm text-muted-foreground line-clamp-3">
+                                {candidature.lettre_motivation}
+                              </p>
+                            </div>
+                          )}
+
+                          {profile?.cv_url && (
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-muted-foreground" />
+                              <a 
+                                href={profile.cv_url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-sm text-secondary hover:underline"
+                              >
+                                Voir le CV
+                              </a>
+                            </div>
+                          )}
+
+                          <div className="flex flex-wrap gap-2 pt-2">
+                            <Button 
+                              size="sm"
+                              variant={candidature.statut === "vue" ? "default" : "outline"}
+                              onClick={() => updateCandidatureStatus(candidature.id, "vue")}
+                              disabled={candidature.statut === "vue"}
+                            >
+                              Vue
+                            </Button>
+                            <Button 
+                              size="sm"
+                              variant={candidature.statut === "en_cours" ? "default" : "outline"}
+                              onClick={() => updateCandidatureStatus(candidature.id, "en_cours")}
+                              disabled={candidature.statut === "en_cours"}
+                            >
+                              En cours
+                            </Button>
+                            <Button 
+                              size="sm"
+                              variant={candidature.statut === "entretien" ? "default" : "outline"}
+                              onClick={() => updateCandidatureStatus(candidature.id, "entretien")}
+                              disabled={candidature.statut === "entretien"}
+                            >
+                              Entretien
+                            </Button>
+                            <Button 
+                              size="sm"
+                              variant={candidature.statut === "acceptee" ? "default" : "outline"}
+                              className={candidature.statut === "acceptee" ? "bg-green-600 hover:bg-green-700" : ""}
+                              onClick={() => updateCandidatureStatus(candidature.id, "acceptee")}
+                              disabled={candidature.statut === "acceptee"}
+                            >
+                              Accepter
+                            </Button>
+                            <Button 
+                              size="sm"
+                              variant={candidature.statut === "refusee" ? "destructive" : "outline"}
+                              onClick={() => updateCandidatureStatus(candidature.id, "refusee")}
+                              disabled={candidature.statut === "refusee"}
+                            >
+                              Refuser
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
