@@ -18,6 +18,7 @@ interface UserData {
   nom: string
   email: string
   telephone: string
+  numero_etudiant: string | null
   photo_url: string | null
   profil_etudiant?: ProfilEtudiant
 }
@@ -377,6 +378,15 @@ export default function CandidateProfile() {
               <Input id="phone" value={telephone ?? ""} onChange={(e) => setTelephone(e.target.value)} className="pl-10" />
             </div>
           </div>
+          {userData?.numero_etudiant && (
+            <div className="space-y-2">
+              <Label htmlFor="studentId">Numéro étudiant</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input id="studentId" value={userData.numero_etudiant} className="pl-10" disabled />
+              </div>
+            </div>
+          )}
           <div className="space-y-2 md:col-span-2">
             <Label htmlFor="location">Localisation</Label>
             <div className="relative">
