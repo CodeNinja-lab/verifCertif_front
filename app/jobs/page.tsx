@@ -70,6 +70,7 @@ export default function JobsPage() {
       title: "Aucune offre disponible",
       company: "VeriCertis",
       logo: "💼",
+    },
     {
       id: 2,
       title: "Lead Frontend Developer",
