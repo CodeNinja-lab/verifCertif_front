@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Briefcase, GraduationCap, Award, Plus, Edit, Trash2, Calendar, Building2, Download, Eye, Loader2, X, Save } from "lucide-react"
-import { cvApi } from "@/lib/api-client"
+import { cvApi, profilEtudiantApi } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
 import {
   Dialog,
@@ -52,6 +52,19 @@ interface Certification {
   url_verification: string | null
 }
 
+interface Competence {
+  competence_id: number
+  niveau: string | null
+  source: string
+  source_document_id: number | null
+  annees_experience: number | null
+  competence?: {
+    id: number
+    nom: string
+    categorie: string
+  }
+}
+
 export default function CandidateCV() {
   const { toast } = useToast()
   const [loading, setLoading] = useState(true)
@@ -61,6 +74,7 @@ export default function CandidateCV() {
   const [experiences, setExperiences] = useState<Experience[]>([])
   const [formations, setFormations] = useState<Formation[]>([])
   const [certifications, setCertifications] = useState<Certification[]>([])
+  const [competences, setCompetences] = useState<Competence[]>([])
   
   // Dialog states
   const [experienceDialogOpen, setExperienceDialogOpen] = useState(false)
@@ -108,6 +122,14 @@ export default function CandidateCV() {
       setExperiences(response.experiences || [])
       setFormations(response.formations || [])
       setCertifications(response.certifications || [])
+      
+      // Charger aussi les compétences depuis le profil
+      try {
+        const competencesResponse = await profilEtudiantApi.getCompetences()
+        setCompetences(competencesResponse.data || [])
+      } catch {
+        setCompetences([])
+      }
     } catch (error: any) {
       toast({
         title: "Erreur",
@@ -518,7 +540,7 @@ export default function CandidateCV() {
             <div className="p-2 rounded-lg bg-primary/10">
               <Award className="h-5 w-5 text-primary" />
             </div>
-            <h2 className="text-xl font-semibold">Certifications & Formations</h2>
+            <h2 className="text-xl font-semibold">Certifications</h2>
           </div>
           <Button variant="outline" size="sm" onClick={() => openCertificationDialog()}>
             <Plus className="mr-2 h-4 w-4" />
@@ -555,6 +577,74 @@ export default function CandidateCV() {
                 </div>
               </div>
             ))
+          )}
+        </div>
+      </Card>
+
+      {/* Compétences */}
+      <Card className="p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 rounded-lg bg-primary/10">
+            <Award className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold">Compétences</h2>
+            <p className="text-sm text-muted-foreground">Gérez vos compétences dans votre profil</p>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          {/* Compétences certifiées */}
+          {competences.filter(c => c.source_document_id !== null).length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-green-600">Compétences certifiées</h3>
+                <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                  ✓ Vérifié par blockchain
+                </Badge>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {competences
+                  .filter(c => c.source_document_id !== null)
+                  .map((comp) => (
+                    <Badge key={comp.competence_id} className="text-sm px-3 py-1.5 bg-green-100 text-green-800">
+                      {comp.competence?.nom || "Compétence"}
+                      {comp.niveau && <span className="ml-1 text-xs opacity-75">• {comp.niveau}</span>}
+                      {comp.annees_experience && (
+                        <span className="ml-1 text-xs opacity-75">• {comp.annees_experience} ans</span>
+                      )}
+                    </Badge>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {/* Compétences déclarées */}
+          {competences.filter(c => c.source_document_id === null).length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-600">Compétences déclarées</h3>
+                <Badge variant="outline" className="text-xs bg-gray-50 text-gray-600 border-gray-200">
+                  Auto-déclaré
+                </Badge>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {competences
+                  .filter(c => c.source_document_id === null)
+                  .map((comp) => (
+                    <Badge key={comp.competence_id} variant="secondary" className="text-sm px-3 py-1.5">
+                      {comp.competence?.nom || "Compétence"}
+                      {comp.niveau && <span className="ml-1 text-xs opacity-75">• {comp.niveau}</span>}
+                    </Badge>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {competences.length === 0 && (
+            <p className="text-muted-foreground text-center py-8">
+              Aucune compétence ajoutée. Rendez-vous dans votre profil pour ajouter des compétences.
+            </p>
           )}
         </div>
       </Card>

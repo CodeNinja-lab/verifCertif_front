@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import Image from "next/image"
 import Link from "next/link"
+import { getApiBaseUrl } from "@/lib/api-client"
 // Import dynamique pour éviter le bundling côté serveur
 
 interface User {
@@ -251,10 +252,11 @@ export function CandidateHeader() {
               {user?.photo_url ? (
                 <div className="h-8 w-8 rounded-full overflow-hidden relative">
                   <Image
-                    src={user.photo_url}
+                    src={user.photo_url.startsWith('http') ? user.photo_url : `${getApiBaseUrl()}${user.photo_url}`}
                     alt="Photo de profil"
                     fill
                     className="object-cover"
+                    unoptimized
                   />
                 </div>
               ) : (

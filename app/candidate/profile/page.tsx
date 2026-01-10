@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { User, Mail, Phone, MapPin, Linkedin, Github, Globe, Upload, Plus, X, Save, Loader2 } from "lucide-react"
-import { authApi, profilEtudiantApi, competenceApi } from "@/lib/api-client"
+import { authApi, profilEtudiantApi, competenceApi, getApiBaseUrl } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
 import Image from "next/image"
 
@@ -167,18 +167,17 @@ export default function CandidateProfile() {
         telephone,
       })
 
-      // Prepare profile data
-      const profileData = {
-        bio: bio || undefined,
-        localisation_actuelle: localisation || undefined,
-        linkedin_url: linkedinUrl || undefined,
-        github_url: githubUrl || undefined,
-        portfolio_url: portfolioUrl || undefined,
-        types_contrat_souhaites: typesContrat ? typesContrat.split(",").map(s => s.trim()) : undefined,
-        salaire_minimum_souhaite: salaire ? parseInt(salaire) : undefined,
-        disponibilite: disponibilite || undefined,
-        mobilite: mobilite || undefined,
-      }
+      // Prepare profile data - remove undefined values
+      const profileData: any = {}
+      if (bio) profileData.bio = bio
+      if (localisation) profileData.localisation_actuelle = localisation
+      if (linkedinUrl) profileData.linkedin_url = linkedinUrl
+      if (githubUrl) profileData.github_url = githubUrl
+      if (portfolioUrl) profileData.portfolio_url = portfolioUrl
+      if (typesContrat) profileData.types_contrat_souhaites = typesContrat.split(",").map(s => s.trim())
+      if (salaire) profileData.salaire_minimum_souhaite = parseInt(salaire)
+      if (disponibilite) profileData.disponibilite = disponibilite
+      if (mobilite) profileData.mobilite = mobilite
 
       // Create or update profile
       if (profilExists) {
@@ -235,13 +234,13 @@ export default function CandidateProfile() {
         !skills.find(s => s.competence_id === c.id)
       )
       setFilteredCompetences(filtered)
-      setShowCompetenceDropdown(true)
+      setShowCompetenceDropdown(filtered.length > 0)
     } else {
       setShowCompetenceDropdown(false)
     }
   }
 
-  const addSkill = async (competence: Competence) => {
+  const addSkill = async (competence?: Competence) => {
     try {
       // Ensure profile exists first
       if (!profilExists) {
@@ -249,18 +248,43 @@ export default function CandidateProfile() {
         setProfilExists(true)
       }
 
-      const response = await profilEtudiantApi.addCompetence({
-        competence_id: competence.id,
-      })
-      
-      setSkills([...skills, response.competence])
-      setNewSkill("")
-      setShowCompetenceDropdown(false)
-      
-      toast({
-        title: "Succès",
-        description: `Compétence "${competence.nom}" ajoutée`,
-      })
+      // Si une compétence est sélectionnée depuis la liste
+      if (competence) {
+        const response = await profilEtudiantApi.addCompetence({
+          competence_id: competence.id,
+        })
+        
+        setSkills([...skills, response.competence])
+        setNewSkill("")
+        setShowCompetenceDropdown(false)
+        
+        toast({
+          title: "Succès",
+          description: `Compétence "${competence.nom}" ajoutée`,
+        })
+      } 
+      // Sinon, créer une nouvelle compétence avec le texte saisi
+      else if (newSkill && newSkill.trim()) {
+        const response = await competenceApi.create({
+          nom: newSkill.trim(),
+          categorie: "Autre",
+        })
+        
+        // Ajouter la nouvelle compétence au profil
+        const addResponse = await profilEtudiantApi.addCompetence({
+          competence_id: response.competence.id,
+        })
+        
+        setSkills([...skills, addResponse.competence])
+        setAllCompetences([...allCompetences, response.competence])
+        setNewSkill("")
+        setShowCompetenceDropdown(false)
+        
+        toast({
+          title: "Succès",
+          description: `Compétence "${newSkill.trim()}" créée et ajoutée`,
+        })
+      }
     } catch (error: any) {
       toast({
         title: "Erreur",
@@ -321,10 +345,11 @@ export default function CandidateProfile() {
           {photoUrl ? (
             <div className="h-24 w-24 rounded-full overflow-hidden relative">
               <Image
-                src={photoUrl}
+                src={photoUrl.startsWith('http') ? photoUrl : `${getApiBaseUrl()}${photoUrl}`}
                 alt="Photo de profil"
                 fill
                 className="object-cover"
+                unoptimized
               />
             </div>
           ) : (
@@ -413,31 +438,40 @@ export default function CandidateProfile() {
         <h2 className="text-xl font-semibold mb-4">Compétences</h2>
         <div className="space-y-6">
           {/* Compétences certifiées */}
-          {skills.filter(s => s.source === 'diplome' || s.source === 'certification' || s.source === 'document').length > 0 && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold text-green-600">Compétences certifiées</h3>
-                <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                  Vérifié
-                </Badge>
-              </div>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-green-600">Compétences certifiées</h3>
+              <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                Vérifié par blockchain
+              </Badge>
+            </div>
+            {skills.filter(s => s.source_document_id !== null).length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {skills
-                  .filter(s => s.source === 'diplome' || s.source === 'certification' || s.source === 'document')
+                  .filter(s => s.source_document_id !== null)
                   .map((skill) => (
-                    <Badge key={skill.competence_id} className="text-sm px-3 py-1.5 bg-green-100 text-green-800 hover:bg-green-200">
+                    <Badge key={skill.competence_id} className="text-sm px-3 py-1.5 bg-green-100 text-green-800">
                       {skill.competence?.nom || "Compétence"}
-                      <button onClick={() => removeSkill(skill.competence_id, skill.competence?.nom || "")} className="ml-2 hover:text-destructive transition-colors">
-                        <X className="h-3 w-3" />
-                      </button>
+                      {skill.niveau && (
+                        <span className="ml-1 text-xs opacity-75">• {skill.niveau}</span>
+                      )}
+                      {skill.annees_experience && (
+                        <span className="ml-1 text-xs opacity-75">• {skill.annees_experience} ans</span>
+                      )}
                     </Badge>
                   ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm text-green-800">
+                  ✨ Les compétences de vos diplômes certifiés apparaîtront automatiquement ici une fois validés par votre université.
+                </p>
+              </div>
+            )}
+          </div>
 
           {/* Compétences non certifiées */}
-          {skills.filter(s => s.source === 'manuel' || !s.source).length > 0 && (
+          {skills.filter(s => s.source_document_id === null).length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-600">Compétences déclarées</h3>
@@ -447,7 +481,7 @@ export default function CandidateProfile() {
               </div>
               <div className="flex flex-wrap gap-2">
                 {skills
-                  .filter(s => s.source === 'manuel' || !s.source)
+                  .filter(s => s.source_document_id === null)
                   .map((skill) => (
                     <Badge key={skill.competence_id} variant="secondary" className="text-sm px-3 py-1.5">
                       {skill.competence?.nom || "Compétence"}
@@ -465,13 +499,32 @@ export default function CandidateProfile() {
             <Label className="text-sm font-medium">Ajouter une compétence</Label>
             <div className="flex gap-2 relative">
               <Input
-                placeholder="Rechercher une compétence"
+                placeholder="Rechercher une compétence (ex: React, Python...)"
                 value={newSkill ?? ""}
                 onChange={(e) => handleSkillSearch(e.target.value)}
                 onFocus={() => newSkill && setShowCompetenceDropdown(true)}
                 onBlur={() => setTimeout(() => setShowCompetenceDropdown(false), 200)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && filteredCompetences.length > 0) {
+                    e.preventDefault()
+                    addSkill(filteredCompetences[0])
+                  }
+                }}
               />
-              <Button variant="outline" disabled>
+              <Button 
+                variant="default" 
+                size="icon"
+                className="flex-shrink-0"
+                onClick={() => {
+                  if (filteredCompetences.length > 0) {
+                    addSkill(filteredCompetences[0])
+                  } else {
+                    addSkill()
+                  }
+                }}
+                disabled={!newSkill || newSkill.trim().length < 2}
+                title="Ajouter la compétence"
+              >
                 <Plus className="h-4 w-4" />
               </Button>
               {showCompetenceDropdown && filteredCompetences.length > 0 && (
@@ -479,10 +532,11 @@ export default function CandidateProfile() {
                   {filteredCompetences.slice(0, 10).map((competence) => (
                     <button
                       key={competence.id}
-                      className="w-full text-left px-4 py-2 hover:bg-muted transition-colors"
+                      className="w-full text-left px-4 py-2 hover:bg-muted transition-colors flex items-center justify-between"
                       onClick={() => addSkill(competence)}
                     >
-                      {competence.nom}
+                      <span>{competence.nom}</span>
+                      <Badge variant="secondary" className="text-xs">{competence.categorie}</Badge>
                     </button>
                   ))}
                 </div>

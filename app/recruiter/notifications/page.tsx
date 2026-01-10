@@ -23,34 +23,11 @@ export default function RecruiterNotificationsPage() {
       const { notificationApi } = await import("@/lib/api-client")
       const response = await notificationApi.list()
       
-      // Gérer la pagination si présente (Laravel retourne { data: [...], links: {...}, meta: {...} })
       let allNotifications: any[] = []
       
       if (response.data && Array.isArray(response.data)) {
         // Si c'est une pagination Laravel
         allNotifications = response.data
-        
-        // Si on a plusieurs pages, charger toutes les pages (limité à 100 notifications pour éviter la surcharge)
-        if (response.meta && response.meta.last_page > 1 && response.meta.last_page <= 5) {
-          const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
-          const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
-          
-          const promises = []
-          for (let page = 2; page <= response.meta.last_page; page++) {
-            promises.push(
-              fetch(`${API_URL}/notifications?page=${page}&per_page=${response.meta.per_page || 20}`, {
-                headers: {
-                  "Content-Type": "application/json",
-                  ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                },
-              })
-                .then(res => res.json())
-                .then(data => data.data || [])
-            )
-          }
-          const additionalPages = await Promise.all(promises)
-          allNotifications = [...allNotifications, ...additionalPages.flat()]
-        }
       } else if (Array.isArray(response)) {
         // Si c'est directement un tableau
         allNotifications = response
@@ -205,7 +182,7 @@ export default function RecruiterNotificationsPage() {
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-2">
-                      {notification.message || notification.description || notification.contenu}
+                      {notification.message || notification.description}
                     </p>
                     <div className="flex items-center justify-between">
                       <p className="text-xs text-muted-foreground">

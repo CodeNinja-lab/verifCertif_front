@@ -2,6 +2,7 @@
 
 // Fichier client-side uniquement pour les appels API
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
+const API_BASE_URL = API_URL.replace('/api/v1', '')
 
 // Fonction utilitaire pour obtenir le token d'authentification
 function getAuthToken(): string | null {
@@ -14,7 +15,12 @@ function getApiUrl(): string {
   return API_URL
 }
 
-// Fonction utilitaire pour les appels API
+// Fonction utilitaire pour obtenir l'URL de base (sans /api/v1)
+export function getApiBaseUrl(): string {
+  return API_BASE_URL
+}
+
+// Fonction utilitaire pour les appels API avec timeout
 async function apiCall(
   endpoint: string,
   options: RequestInit = {}
@@ -29,22 +35,36 @@ async function apiCall(
     headers.Authorization = `Bearer ${token}`
   }
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers,
-  })
+  // Ajouter un timeout de 30 secondes pour serveurs lents
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 30000)
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: "Une erreur est survenue" }))
-    const errorWithResponse = new Error(error.message || `Erreur ${response.status}`) as any
-    errorWithResponse.response = response
-    errorWithResponse.status = response.status
-    errorWithResponse.errors = error.errors || error.message
-    errorWithResponse.data = error
-    throw errorWithResponse
+  try {
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    })
+    clearTimeout(timeoutId)
+    
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: "Une erreur est survenue" }))
+      const errorWithResponse = new Error(error.message || `Erreur ${response.status}`) as any
+      errorWithResponse.response = response
+      errorWithResponse.status = response.status
+      errorWithResponse.errors = error.errors || error.message
+      errorWithResponse.data = error
+      throw errorWithResponse
+    }
+    
+    return response
+  } catch (error: any) {
+    clearTimeout(timeoutId)
+    if (error.name === 'AbortError') {
+      throw new Error('La requête a pris trop de temps. Vérifiez votre connexion.')
+    }
+    throw error
   }
-
-  return response
 }
 
 // Service API pour les offres
@@ -213,6 +233,15 @@ export const competenceApi = {
     const response = await apiCall(`/competences/search/${encodeURIComponent(query)}`)
     return response.json()
   },
+
+  // Créer une nouvelle compétence
+  create: async (data: { nom: string; categorie: string; description?: string }) => {
+    const response = await apiCall("/competences", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+    return response.json()
+  },
 }
 
 // Service API pour les notifications
@@ -303,12 +332,18 @@ export const messageApi = {
     return response.json()
   },
 
-  // Obtenir ou créer une conversation
+  // Obtenir ou créer une conversation (recruteur)
   getOrCreateConversation: async (etudiantId: number | string, offreId?: number | string) => {
     const url = offreId 
       ? `/messages/conversation/${etudiantId}/${offreId}/create`
       : `/messages/conversation/${etudiantId}/create`
     const response = await apiCall(url)
+    return response.json()
+  },
+
+  // Obtenir ou créer une conversation (étudiant avec recruteur)
+  getOrCreateConversationAsStudent: async (offreId: number | string) => {
+    const response = await apiCall(`/messages/student/conversation/${offreId}/create`)
     return response.json()
   },
 

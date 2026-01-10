@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -21,7 +22,7 @@ import {
   AlertCircle,
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { candidatureApi } from "@/lib/api-client"
+import { candidatureApi, messageApi } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
 import {
   AlertDialog,
@@ -58,6 +59,7 @@ interface Candidature {
 }
 
 export default function CandidateApplications() {
+  const router = useRouter()
   const [candidatures, setCandidatures] = useState<Candidature[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
@@ -87,6 +89,42 @@ export default function CandidateApplications() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleSendMessage = async (candidature: Candidature) => {
+    if (!candidature.offre_id) {
+      toast({
+        title: "Erreur",
+        description: "Cette candidature n'a pas d'offre associée",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Afficher un toast de chargement
+    toast({
+      title: "Ouverture de la conversation...",
+      description: "Veuillez patienter",
+    })
+
+    try {
+      // Créer ou obtenir la conversation avec le recruteur
+      const response = await messageApi.getOrCreateConversationAsStudent(candidature.offre_id)
+      
+      if (response.success && response.conversation) {
+        // Rediriger vers la page des messages avec la conversation ouverte
+        router.push(`/candidate/messages?conversation=${response.conversation.id}`)
+      } else {
+        throw new Error("Réponse invalide du serveur")
+      }
+    } catch (error: any) {
+      console.error("Erreur lors de la création de la conversation:", error)
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de contacter le recruteur. Vérifiez votre connexion.",
+        variant: "destructive",
+      })
     }
   }
 
@@ -329,7 +367,10 @@ export default function CandidateApplications() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem>Voir les détails</DropdownMenuItem>
-                            <DropdownMenuItem>Envoyer un message</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleSendMessage(candidature)}>
+                              <MessageSquare className="mr-2 h-4 w-4" />
+                              Envoyer un message
+                            </DropdownMenuItem>
                             {!["acceptee", "refusee", "annulee"].includes(candidature.statut) && (
                               <DropdownMenuItem
                                 className="text-destructive"

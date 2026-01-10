@@ -246,7 +246,7 @@ function CandidatesPage() {
       const { messageApi } = await import("@/lib/api-client")
       // Créer ou obtenir la conversation
       const data = await messageApi.getOrCreateConversation(
-        candidate.matching.etudiant_id,
+        candidate.etudiantId,
         candidate.offre?.id
       )
       // Rediriger vers la page messages

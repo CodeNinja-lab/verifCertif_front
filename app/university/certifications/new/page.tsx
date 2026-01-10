@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Upload, FileCheck, Hash, Shield, QrCode, CheckCircle2, AlertCircle } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import Link from "next/link"
-import { diplomeApi, profilEtudiantApi } from "@/lib/api-client"
+import { diplomeApi, profilEtudiantApi, documentApi } from "@/lib/api-client"
 import { Badge } from "@/components/ui/badge"
 
 interface Diplome {
@@ -43,6 +43,14 @@ export default function NewCertificationPage() {
     notes: "",
   })
   const [error, setError] = useState<string | null>(null)
+  const [createdDocument, setCreatedDocument] = useState<any>(null)
+
+  // Nettoyer le localStorage au montage pour éviter les vieux documents
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem("lastCertifiedDocument")
+    }
+  }, [])
 
   useEffect(() => {
     loadDiplomes()
@@ -217,12 +225,17 @@ export default function NewCertificationPage() {
 
       const result = await response.json()
       console.log("Certification completed:", result)
+      console.log("Document structure:", JSON.stringify(result.document, null, 2))
       
       // Les compétences sont maintenant liées automatiquement côté backend
       // lors de la création du document si un diplôme a été sélectionné
       
       // Stocker les infos du document pour l'étape 3
-      localStorage.setItem("lastCertifiedDocument", JSON.stringify(result.document))
+      const documentData = result.document?.data || result.document || result
+      console.log("Document data:", documentData)
+      console.log("Document ID:", documentData.id)
+      setCreatedDocument(documentData)
+      localStorage.setItem("lastCertifiedDocument", JSON.stringify(documentData))
       
       setIsProcessing(false)
       setStep(3)
@@ -251,20 +264,32 @@ export default function NewCertificationPage() {
 
               <Card className="bg-muted/50">
                 <CardContent className="p-6 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Hash blockchain</span>
-                    <code className="text-xs bg-background px-3 py-1 rounded font-mono">
-                      a3f5e8c2d1b4f7e9c8d5a2b6f3e1d4c7
-                    </code>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">ID de certification</span>
-                    <code className="text-xs bg-background px-3 py-1 rounded font-mono">CERT-2024-0123</code>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Bloc</span>
-                    <code className="text-xs bg-background px-3 py-1 rounded font-mono">#892471</code>
-                  </div>
+                  {createdDocument?.blockchain_tx_hash && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Hash blockchain</span>
+                      <code className="text-xs bg-background px-3 py-1 rounded font-mono">
+                        {createdDocument.blockchain_tx_hash.substring(0, 24)}...
+                      </code>
+                    </div>
+                  )}
+                  {createdDocument?.uuid_document && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">UUID du diplôme</span>
+                      <code className="text-xs bg-background px-3 py-1 rounded font-mono">{createdDocument.uuid_document}</code>
+                    </div>
+                  )}
+                  {createdDocument?.id && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">ID</span>
+                      <code className="text-xs bg-background px-3 py-1 rounded font-mono">#{createdDocument.id}</code>
+                    </div>
+                  )}
+                  {createdDocument?.statut && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Statut</span>
+                      <Badge variant="default" className="bg-green-500">{createdDocument.statut}</Badge>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -296,54 +321,60 @@ export default function NewCertificationPage() {
                     try {
                       if (typeof window === 'undefined') return
                       
-                      const documentStr = localStorage.getItem("lastCertifiedDocument")
-                      if (!documentStr) {
-                        alert("Aucun document trouvé")
-                        return
+                      // Utiliser le document du state d'abord, sinon localStorage
+                      let doc = createdDocument
+                      if (!doc) {
+                        const documentStr = localStorage.getItem("lastCertifiedDocument")
+                        if (!documentStr) {
+                          alert("Aucun document trouvé")
+                          return
+                        }
+                        doc = JSON.parse(documentStr)
                       }
-                      const doc = JSON.parse(documentStr)
+                      
                       if (!doc?.id) {
-                        alert("ID du document introuvable")
+                        alert("ID du document introuvable. Document: " + JSON.stringify(doc))
                         return
                       }
                       
-                      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
-                      const token = localStorage.getItem("auth_token")
+                      console.log("Téléchargement du document ID:", doc.id)
+                      console.log("Document complet:", doc)
                       
-                      if (!token) {
-                        alert("Vous devez être connecté pour télécharger le diplôme")
+                      // Vérifier d'abord que le document existe
+                      try {
+                        await documentApi.get(doc.id)
+                      } catch (checkError: any) {
+                        alert(`Le document n'existe pas encore dans la base de données. Veuillez patienter quelques instants et réessayer.`)
+                        console.error("Document not found:", checkError)
                         return
                       }
                       
-                      // Télécharger le document via l'API
-                      const response = await fetch(`${API_URL}/documents/${doc.id}/download`, {
-                        headers: {
-                          Authorization: `Bearer ${token}`,
-                        },
-                      })
+                      // Utiliser documentApi.download pour gérer correctement le téléchargement
+                      const blob = await documentApi.download(doc.id)
                       
-                      if (!response.ok) {
-                        throw new Error("Erreur lors du téléchargement")
-                      }
-                      
-                      // Récupérer le blob et créer un lien de téléchargement
-                      const blob = await response.blob()
+                      // Créer un lien de téléchargement
                       const url = window.URL.createObjectURL(blob)
                       const a = window.document.createElement("a")
                       a.href = url
-                      // Déterminer l'extension selon le type de fichier
-                      const contentType = response.headers.get("content-type") || ""
-                      const extension = contentType.includes("pdf") ? "pdf" : 
-                                       contentType.includes("html") ? "html" : 
+                      const extension = blob.type.includes("pdf") ? "pdf" : 
+                                       blob.type.includes("html") ? "html" : 
                                        doc.file_url?.endsWith(".html") ? "html" : "pdf"
                       a.download = `diplome_${doc.uuid_document || doc.id}.${extension}`
                       window.document.body.appendChild(a)
                       a.click()
                       window.URL.revokeObjectURL(url)
                       window.document.body.removeChild(a)
+                      
+                      alert("Diplôme téléchargé avec succès !")
                     } catch (error: any) {
                       console.error("Erreur de téléchargement:", error)
-                      alert(`Erreur lors du téléchargement: ${error.message}`)
+                      let errorMessage = error.message || 'Erreur inconnue'
+                      
+                      if (errorMessage.includes('No query results')) {
+                        errorMessage = "Le fichier du diplôme n'est pas encore disponible. Le système est peut-être en train de le générer. Veuillez patienter quelques instants et réessayer."
+                      }
+                      
+                      alert(`Erreur lors du téléchargement: ${errorMessage}`)  
                     }
                   }}
                 >

@@ -114,12 +114,17 @@ export default function DegreesPage() {
           <h1 className="text-3xl font-bold tracking-tight">Gestion des diplômes</h1>
           <p className="text-muted-foreground">Certifiez et gérez les diplômes de vos étudiants</p>
         </div>
-        <Button asChild className="bg-gradient-to-r from-purple-500 to-pink-600 hover:opacity-90">
-          <Link href="/university/certifications/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Nouveau diplôme
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={loadDocuments}>
+            Actualiser
+          </Button>
+          <Button asChild className="bg-gradient-to-r from-purple-500 to-pink-600 hover:opacity-90">
+            <Link href="/university/certifications/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Nouveau diplôme
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
@@ -257,7 +262,29 @@ export default function DegreesPage() {
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL}/storage/${doc.uuid_document}`, "_blank")}
+                            onClick={async () => {
+                              try {
+                                const blob = await documentApi.download(doc.id)
+                                const url = window.URL.createObjectURL(blob)
+                                const a = document.createElement('a')
+                                a.href = url
+                                a.download = `${doc.titre}_${doc.etudiant?.nom || 'diplome'}.pdf`
+                                document.body.appendChild(a)
+                                a.click()
+                                window.URL.revokeObjectURL(url)
+                                document.body.removeChild(a)
+                                toast({
+                                  title: "Succès",
+                                  description: "Diplôme téléchargé avec succès",
+                                })
+                              } catch (error: any) {
+                                toast({
+                                  title: "Erreur lors du téléchargement",
+                                  description: error.message || "Impossible de télécharger le diplôme",
+                                  variant: "destructive",
+                                })
+                              }
+                            }}
                           >
                             <Download className="mr-2 h-4 w-4" />
                             Télécharger PDF

@@ -48,6 +48,7 @@ import {
   AlertTriangle,
 } from "lucide-react"
 import { authApi } from "@/lib/api-client"
+import { getApiBaseUrl } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
 
 interface UserProfile {
@@ -298,7 +299,10 @@ export default function CandidateSettingsPage() {
             </CardHeader>
             <CardContent className="flex items-center gap-6">
               <Avatar className="h-24 w-24">
-                <AvatarImage src={user?.photo_url || ""} alt="Photo de profil" />
+                <AvatarImage 
+                  src={user?.photo_url ? (user.photo_url.startsWith('http') ? user.photo_url : `${getApiBaseUrl()}${user.photo_url}`) : ""} 
+                  alt="Photo de profil" 
+                />
                 <AvatarFallback className="text-2xl bg-gradient-to-br from-primary to-secondary text-primary-foreground">
                   {getInitials()}
                 </AvatarFallback>

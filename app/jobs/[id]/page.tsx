@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { PublicHeader } from "@/components/public-header"
 import { PublicFooter } from "@/components/public-footer"
 import { Card } from "@/components/ui/card"
@@ -23,22 +23,46 @@ import {
   Calendar,
   Target,
   Loader2,
+  MessageSquare,
 } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 
 export default function JobDetailPage() {
   const params = useParams()
+  const router = useRouter()
   const jobId = params.id as string
   const [job, setJob] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [similarJobs, setSimilarJobs] = useState<any[]>([])
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const [contacting, setContacting] = useState(false)
 
   useEffect(() => {
     if (jobId) {
-      loadJob()
+      checkAuthAndLoadJob()
     }
   }, [jobId])
+
+  const checkAuthAndLoadJob = async () => {
+    // Vérifier l'authentification
+    const token = localStorage.getItem("auth_token")
+    if (token) {
+      try {
+        const { authApi } = await import("@/lib/api-client")
+        const userData = await authApi.me()
+        if (userData.user) {
+          setUser(userData.user)
+          setIsAuthenticated(true)
+        }
+      } catch {
+        setIsAuthenticated(false)
+      }
+    }
+    
+    await loadJob()
+  }
 
   const loadJob = async () => {
     if (!jobId) return
@@ -58,6 +82,46 @@ export default function JobDetailPage() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleContactRecruiter = async () => {
+    if (!isAuthenticated) {
+      toast.error("Connexion requise", {
+        description: "Vous devez être connecté pour contacter le recruteur.",
+      })
+      router.push(`/login?redirect=/jobs/${jobId}`)
+      return
+    }
+
+    if (user.type !== "etudiant") {
+      toast.error("Accès refusé", {
+        description: "Seuls les étudiants peuvent contacter les recruteurs.",
+      })
+      return
+    }
+
+    try {
+      setContacting(true)
+      const { messageApi } = await import("@/lib/api-client")
+      
+      // Créer ou récupérer la conversation avec le recruteur
+      const response = await messageApi.getOrCreateConversationAsStudent(parseInt(jobId))
+      
+      if (response.success && response.conversation) {
+        // Rediriger vers la page des messages avec cette conversation
+        router.push(`/candidate/messages?conversation=${response.conversation.id}`)
+        toast.success("Conversation ouverte", {
+          description: "Vous pouvez maintenant discuter avec le recruteur.",
+        })
+      }
+    } catch (error: any) {
+      console.error("Erreur:", error)
+      toast.error("Erreur", {
+        description: error.message || "Impossible de contacter le recruteur.",
+      })
+    } finally {
+      setContacting(false)
     }
   }
 
@@ -216,8 +280,23 @@ export default function JobDetailPage() {
                   <Button size="lg" className="bg-gradient-to-r from-primary to-secondary text-lg" asChild>
                     <Link href={`/jobs/${jobId}/apply`}>Postuler maintenant</Link>
                   </Button>
-                  <Button size="lg" variant="outline">
-                    Contacter le recruteur
+                  <Button 
+                    size="lg" 
+                    variant="outline"
+                    onClick={handleContactRecruiter}
+                    disabled={contacting}
+                  >
+                    {contacting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Connexion...
+                      </>
+                    ) : (
+                      <>
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Contacter le recruteur
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>

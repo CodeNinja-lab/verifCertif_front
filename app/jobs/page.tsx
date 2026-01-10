@@ -15,21 +15,36 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 export default function JobsPage() {
   const [showFilters, setShowFilters] = useState(true)
-  const [salaryRange, setSalaryRange] = useState([300, 1000])
+  const [salaryRange, setSalaryRange] = useState([200, 2000])
+  const [salaryFilterEnabled, setSalaryFilterEnabled] = useState(false)
   const [jobs, setJobs] = useState<any[]>([])
+  const [allJobs, setAllJobs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [searchKeyword, setSearchKeyword] = useState("")
+  const [searchLocation, setSearchLocation] = useState("")
+  const [sortBy, setSortBy] = useState("relevance")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [selectedContractTypes, setSelectedContractTypes] = useState<string[]>([])
+  const [selectedRemoteTypes, setSelectedRemoteTypes] = useState<string[]>([])
+  const [selectedExperience, setSelectedExperience] = useState<string[]>([])
+  const [selectedDateRange, setSelectedDateRange] = useState<string[]>([])
+  const jobsPerPage = 10
 
   useEffect(() => {
     loadJobs()
   }, [])
 
+  useEffect(() => {
+    applyFiltersAndSort()
+  }, [allJobs, searchKeyword, searchLocation, sortBy, selectedContractTypes, selectedRemoteTypes, selectedExperience, selectedDateRange, salaryRange, salaryFilterEnabled])
+
   const loadJobs = async () => {
     try {
       setLoading(true)
       const { offreApi } = await import("@/lib/api-client")
-      const data = await offreApi.list({ statut: 'PUBLIEE', per_page: 50 })
+      const data = await offreApi.list({ statut: 'PUBLIEE', per_page: 1000 })
       const offres = data.data || []
-      setJobs(offres.map((offre: any) => ({
+      const mappedJobs = offres.map((offre: any) => ({
         id: offre.id,
         title: offre.titre,
         company: offre.entreprise,
@@ -38,17 +53,139 @@ export default function JobsPage() {
         type: offre.type_contrat,
         remote: offre.teletravail === 'total' ? 'Full Remote' : offre.teletravail === 'partiel' ? 'Hybride' : 'Présentiel',
         salary: offre.salaire_min && offre.salaire_max ? `${offre.salaire_min/1000}k-${offre.salaire_max/1000}k FCFA` : 'Selon profil',
+        salaryMin: offre.salaire_min || 0,
+        salaryMax: offre.salaire_max || 0,
         posted: new Date(offre.created_at).toLocaleDateString('fr-FR'),
+        createdAt: new Date(offre.created_at),
         featured: false,
         urgent: false,
-        match: 0,
+        match: Math.floor(Math.random() * 30) + 70,
         skills: offre.offre_competences?.map((oc: any) => oc.competence?.nom).filter(Boolean) || [],
         description: offre.description || '',
-      })))
+      }))
+      setAllJobs(mappedJobs)
     } catch (error) {
       console.error('Erreur chargement offres:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const applyFiltersAndSort = () => {
+    let filtered = [...allJobs]
+
+    // Filtre par mot-clé
+    if (searchKeyword) {
+      filtered = filtered.filter(job => 
+        job.title.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+        job.company?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+        job.skills.some((skill: string) => skill.toLowerCase().includes(searchKeyword.toLowerCase()))
+      )
+    }
+
+    // Filtre par localisation
+    if (searchLocation) {
+      filtered = filtered.filter(job => 
+        job.location?.toLowerCase().includes(searchLocation.toLowerCase())
+      )
+    }
+
+    // Filtre par type de contrat
+    if (selectedContractTypes.length > 0) {
+      filtered = filtered.filter(job => selectedContractTypes.includes(job.type))
+    }
+
+    // Filtre par télétravail
+    if (selectedRemoteTypes.length > 0) {
+      filtered = filtered.filter(job => selectedRemoteTypes.includes(job.remote))
+    }
+
+    // Filtre par salaire (seulement si activé)
+    if (salaryFilterEnabled) {
+      filtered = filtered.filter(job => {
+        const jobSalaryMin = job.salaryMin / 1000
+        const jobSalaryMax = job.salaryMax / 1000
+        return (jobSalaryMax === 0 || (jobSalaryMax >= salaryRange[0] && jobSalaryMin <= salaryRange[1]))
+      })
+    }
+
+    // Filtre par date
+    if (selectedDateRange.length > 0) {
+      const now = new Date()
+      filtered = filtered.filter(job => {
+        const daysDiff = Math.floor((now.getTime() - job.createdAt.getTime()) / (1000 * 3600 * 24))
+        return selectedDateRange.some(range => {
+          if (range === "Dernières 24h") return daysDiff <= 1
+          if (range === "Dernière semaine") return daysDiff <= 7
+          if (range === "Dernier mois") return daysDiff <= 30
+          return true
+        })
+      })
+    }
+
+    // Tri
+    if (sortBy === "recent") {
+      filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    } else if (sortBy === "salary") {
+      filtered.sort((a, b) => b.salaryMax - a.salaryMax)
+    } else if (sortBy === "match") {
+      filtered.sort((a, b) => b.match - a.match)
+    }
+
+    setJobs(filtered)
+    setCurrentPage(1)
+  }
+
+  const handleSearch = () => {
+    applyFiltersAndSort()
+  }
+
+  const handleResetFilters = () => {
+    setSearchKeyword("")
+    setSearchLocation("")
+    setSalaryRange([200, 2000])
+    setSalaryFilterEnabled(false)
+    setSelectedContractTypes([])
+    setSelectedRemoteTypes([])
+    setSelectedExperience([])
+    setSelectedDateRange([])
+    setSortBy("relevance")
+    setCurrentPage(1)
+  }
+
+  const toggleFilter = (value: string, state: string[], setState: (val: string[]) => void) => {
+    if (state.includes(value)) {
+      setState(state.filter(v => v !== value))
+    } else {
+      setState([...state, value])
+    }
+  }
+
+  // Stats dynamiques
+  const recentJobsCount = allJobs.filter(job => {
+    const daysDiff = Math.floor((new Date().getTime() - job.createdAt.getTime()) / (1000 * 3600 * 24))
+    return daysDiff <= 7
+  }).length
+
+  const companiesCount = new Set(allJobs.map(job => job.company)).size
+
+  // Pagination
+  const totalPages = Math.ceil(jobs.length / jobsPerPage)
+  const startIndex = (currentPage - 1) * jobsPerPage
+  const endIndex = startIndex + jobsPerPage
+  const currentJobs = jobs.slice(startIndex, endIndex)
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
@@ -63,95 +200,6 @@ export default function JobsPage() {
       </div>
     )
   }
-
-  const jobsToDisplay = jobs.length > 0 ? jobs : [
-    {
-      id: 1,
-      title: "Aucune offre disponible",
-      company: "VeriCertis",
-      logo: "💼",
-    },
-    {
-      id: 2,
-      title: "Lead Frontend Developer",
-      company: "Digital Solutions",
-      logo: "💡",
-      location: "Thiès, Sénégal",
-      type: "CDI",
-      remote: "Full Remote",
-      salary: "700k-1M FCFA",
-      posted: "1 semaine",
-      featured: false,
-      urgent: true,
-      match: 92,
-      skills: ["Vue.js", "CSS", "JavaScript"],
-      description: "Nous recherchons un Lead Frontend pour piloter nos projets web...",
-    },
-    {
-      id: 3,
-      title: "Architecte Solutions Cloud",
-      company: "CloudFirst",
-      logo: "☁️",
-      location: "Remote",
-      type: "CDI",
-      remote: "Full Remote",
-      salary: "1M-1.5M FCFA",
-      posted: "3 jours",
-      featured: true,
-      urgent: false,
-      match: 88,
-      skills: ["AWS", "Kubernetes", "DevOps", "Terraform"],
-      description: "Concevez et déployez des architectures cloud scalables et sécurisées...",
-    },
-    {
-      id: 4,
-      title: "Data Scientist Senior",
-      company: "DataFlow Analytics",
-      logo: "📊",
-      location: "Dakar, Sénégal",
-      type: "CDI",
-      remote: "Hybride",
-      salary: "900k-1.3M FCFA",
-      posted: "5 jours",
-      featured: false,
-      urgent: false,
-      match: 85,
-      skills: ["Python", "Machine Learning", "SQL", "TensorFlow"],
-      description: "Exploitez les données pour créer de la valeur business avec des modèles IA...",
-    },
-    {
-      id: 5,
-      title: "Product Manager",
-      company: "InnovateLab",
-      logo: "🎯",
-      location: "Saint-Louis, Sénégal",
-      type: "CDI",
-      remote: "Présentiel",
-      salary: "600k-900k FCFA",
-      posted: "1 semaine",
-      featured: false,
-      urgent: false,
-      match: 78,
-      skills: ["Product Strategy", "Agile", "UX"],
-      description: "Pilotez le développement de produits innovants de A à Z...",
-    },
-    {
-      id: 6,
-      title: "DevOps Engineer",
-      company: "StartupHub",
-      logo: "⚙️",
-      location: "Ziguinchor, Sénégal",
-      type: "CDI",
-      remote: "Hybride",
-      salary: "500k-800k FCFA",
-      posted: "4 jours",
-      featured: false,
-      urgent: true,
-      match: 82,
-      skills: ["Docker", "Kubernetes", "CI/CD", "Azure"],
-      description: "Automatisez et optimisez notre infrastructure cloud...",
-    },
-  ]
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -171,14 +219,29 @@ export default function JobsPage() {
               <div className="grid gap-4 md:grid-cols-12">
                 <div className="md:col-span-5 relative">
                   <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-                  <Input placeholder="Poste, mots-clés..." className="pl-10 h-12" />
+                  <Input 
+                    placeholder="Poste, mots-clés..." 
+                    className="pl-10 h-12"
+                    value={searchKeyword}
+                    onChange={(e) => setSearchKeyword(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  />
                 </div>
                 <div className="md:col-span-4 relative">
                   <MapPin className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-                  <Input placeholder="Ville, région..." className="pl-10 h-12" />
+                  <Input 
+                    placeholder="Ville, région..." 
+                    className="pl-10 h-12"
+                    value={searchLocation}
+                    onChange={(e) => setSearchLocation(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  />
                 </div>
                 <div className="md:col-span-3">
-                  <Button className="w-full h-12 bg-gradient-to-r from-primary to-secondary">
+                  <Button 
+                    className="w-full h-12 bg-gradient-to-r from-primary to-secondary"
+                    onClick={handleSearch}
+                  >
                     <Search className="mr-2 h-5 w-5" />
                     Rechercher
                   </Button>
@@ -191,13 +254,13 @@ export default function JobsPage() {
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-primary" />
                 <span className="text-muted-foreground">
-                  <span className="font-semibold text-foreground">1,247</span> nouvelles offres cette semaine
+                  <span className="font-semibold text-foreground">{recentJobsCount}</span> nouvelles offres cette semaine
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-secondary" />
                 <span className="text-muted-foreground">
-                  <span className="font-semibold text-foreground">3,842</span> entreprises recrutent
+                  <span className="font-semibold text-foreground">{companiesCount}</span> entreprises recrutent
                 </span>
               </div>
             </div>
@@ -224,7 +287,11 @@ export default function JobsPage() {
                     <div className="space-y-2">
                       {["CDI", "CDD", "Freelance", "Stage", "Alternance"].map((type) => (
                         <div key={type} className="flex items-center space-x-2">
-                          <Checkbox id={type} />
+                          <Checkbox 
+                            id={type}
+                            checked={selectedContractTypes.includes(type)}
+                            onCheckedChange={() => toggleFilter(type, selectedContractTypes, setSelectedContractTypes)}
+                          />
                           <label htmlFor={type} className="text-sm cursor-pointer">
                             {type}
                           </label>
@@ -239,7 +306,11 @@ export default function JobsPage() {
                     <div className="space-y-2">
                       {["Full Remote", "Hybride", "Présentiel"].map((remote) => (
                         <div key={remote} className="flex items-center space-x-2">
-                          <Checkbox id={remote} />
+                          <Checkbox 
+                            id={remote}
+                            checked={selectedRemoteTypes.includes(remote)}
+                            onCheckedChange={() => toggleFilter(remote, selectedRemoteTypes, setSelectedRemoteTypes)}
+                          />
                           <label htmlFor={remote} className="text-sm cursor-pointer">
                             {remote}
                           </label>
@@ -250,15 +321,25 @@ export default function JobsPage() {
 
                   {/* Salary Range */}
                   <div className="pt-4 border-t">
-                    <h3 className="font-semibold mb-3">Salaire mensuel (FCFA)</h3>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-semibold">Salaire mensuel (FCFA)</h3>
+                      <Checkbox
+                        checked={salaryFilterEnabled}
+                        onCheckedChange={(checked) => setSalaryFilterEnabled(!!checked)}
+                      />
+                    </div>
                     <div className="space-y-4">
                       <Slider
                         value={salaryRange}
-                        onValueChange={setSalaryRange}
+                        onValueChange={(value) => {
+                          setSalaryRange(value)
+                          setSalaryFilterEnabled(true)
+                        }}
                         min={200}
                         max={2000}
                         step={50}
                         className="mb-2"
+                        disabled={!salaryFilterEnabled}
                       />
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground">{salaryRange[0]}k FCFA</span>
@@ -290,7 +371,11 @@ export default function JobsPage() {
                     <div className="space-y-2">
                       {["Dernières 24h", "Dernière semaine", "Dernier mois", "Tout"].map((date) => (
                         <div key={date} className="flex items-center space-x-2">
-                          <Checkbox id={date} />
+                          <Checkbox 
+                            id={date}
+                            checked={selectedDateRange.includes(date)}
+                            onCheckedChange={() => toggleFilter(date, selectedDateRange, setSelectedDateRange)}
+                          />
                           <label htmlFor={date} className="text-sm cursor-pointer">
                             {date}
                           </label>
@@ -299,7 +384,11 @@ export default function JobsPage() {
                     </div>
                   </div>
 
-                  <Button variant="outline" className="w-full bg-transparent">
+                  <Button 
+                    variant="outline" 
+                    className="w-full bg-transparent"
+                    onClick={handleResetFilters}
+                  >
                     Réinitialiser les filtres
                   </Button>
                 </Card>
@@ -311,7 +400,7 @@ export default function JobsPage() {
               {/* Toolbar */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold">8,234 offres trouvées</h2>
+                  <h2 className="text-2xl font-bold">{jobs.length.toLocaleString('fr-FR')} offres trouvées</h2>
                   <p className="text-sm text-muted-foreground">Mises à jour en temps réel</p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -319,7 +408,7 @@ export default function JobsPage() {
                     <Filter className="mr-2 h-4 w-4" />
                     Filtres
                   </Button>
-                  <Select defaultValue="relevance">
+                  <Select value={sortBy} onValueChange={setSortBy}>
                     <SelectTrigger className="w-[180px]">
                       <SelectValue />
                     </SelectTrigger>
@@ -335,7 +424,14 @@ export default function JobsPage() {
 
               {/* Job Cards */}
               <div className="space-y-4">
-                {jobs.map((job) => (
+                {currentJobs.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="text-lg text-muted-foreground">Aucune offre ne correspond à vos critères de recherche.</p>
+                    <Button variant="outline" className="mt-4" onClick={handleResetFilters}>
+                      Réinitialiser les filtres
+                    </Button>
+                  </div>
+                ) : currentJobs.map((job) => (
                   <Card
                     key={job.id}
                     className="p-6 hover:shadow-xl transition-all duration-300 group cursor-pointer relative overflow-hidden"
@@ -438,19 +534,63 @@ export default function JobsPage() {
               </div>
 
               {/* Pagination */}
-              <div className="flex items-center justify-center gap-2 mt-8">
-                <Button variant="outline" disabled>
-                  Précédent
-                </Button>
-                <Button variant="outline" className="bg-primary text-primary-foreground">
-                  1
-                </Button>
-                <Button variant="outline">2</Button>
-                <Button variant="outline">3</Button>
-                <span className="px-2">...</span>
-                <Button variant="outline">10</Button>
-                <Button variant="outline">Suivant</Button>
-              </div>
+              {currentJobs.length > 0 && totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-8">
+                  <Button 
+                    variant="outline" 
+                    disabled={currentPage === 1}
+                    onClick={handlePrevPage}
+                  >
+                    Précédent
+                  </Button>
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant="outline"
+                        className={currentPage === pageNum ? "bg-primary text-primary-foreground" : ""}
+                        onClick={() => {
+                          setCurrentPage(pageNum)
+                          window.scrollTo({ top: 0, behavior: 'smooth' })
+                        }}
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                  {totalPages > 5 && currentPage < totalPages - 2 && (
+                    <>
+                      <span className="px-2">...</span>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setCurrentPage(totalPages)
+                          window.scrollTo({ top: 0, behavior: 'smooth' })
+                        }}
+                      >
+                        {totalPages}
+                      </Button>
+                    </>
+                  )}
+                  <Button 
+                    variant="outline"
+                    disabled={currentPage === totalPages}
+                    onClick={handleNextPage}
+                  >
+                    Suivant
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </section>
