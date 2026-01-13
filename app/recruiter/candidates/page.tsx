@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -497,7 +498,11 @@ function CandidatesPage() {
                   </div>
 
                   <div className="flex gap-2">
-                    <Button className="bg-gradient-to-r from-secondary to-primary">Voir le profil complet</Button>
+                    <Button className="bg-gradient-to-r from-secondary to-primary" asChild>
+                      <Link href={`/recruiter/candidates/${candidate.etudiantId}`}>
+                        Voir le profil complet
+                      </Link>
+                    </Button>
                     <Button variant="outline" onClick={() => handleContact(candidate)}>
                       <MessageSquare className="mr-2 h-4 w-4" />
                       Contacter

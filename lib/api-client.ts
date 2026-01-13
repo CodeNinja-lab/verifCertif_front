@@ -456,6 +456,12 @@ export const profilEtudiantApi = {
     return response.json()
   },
 
+  // Obtenir le profil d'un étudiant par son ID (pour recruteurs)
+  getByUserId: async (userId: number | string) => {
+    const response = await apiCall(`/etudiant/${userId}/profil`)
+    return response.json()
+  },
+
   // Créer un profil
   create: async (data: {
     bio?: string
@@ -615,6 +621,12 @@ export const cvApi = {
   // Obtenir toutes les données du CV
   getAll: async () => {
     const response = await apiCall("/cv")
+    return response.json()
+  },
+
+  // Obtenir le CV d'un étudiant par son ID (pour recruteurs)
+  getByUserId: async (userId: number | string) => {
+    const response = await apiCall(`/etudiant/${userId}/cv`)
     return response.json()
   },
 
