@@ -55,10 +55,18 @@ export default function CandidateProfilePage() {
       setCv(cvData)
     } catch (error: any) {
       console.error("Erreur lors du chargement du profil:", error)
+      let errorMessage = "Impossible de charger le profil du candidat."
+      
       if (error.status === 403) {
-        alert("Ce profil est privé ou vous n'avez pas l'autorisation d'y accéder.")
-        router.back()
+        errorMessage = "Ce profil est privé ou vous n'avez pas l'autorisation d'y accéder."
+      } else if (error.status === 404) {
+        errorMessage = "Ce candidat n'a pas encore complété son profil."
+      } else if (error.message) {
+        errorMessage = error.message
       }
+      
+      alert(errorMessage)
+      router.back()
     } finally {
       setLoading(false)
     }

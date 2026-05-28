@@ -215,7 +215,7 @@ export default function RecruiterJobsPage() {
             <div>
               <p className="text-sm text-muted-foreground">Candidatures totales</p>
               <p className="text-2xl font-bold">
-                {offres.reduce((acc: number, o: any) => acc + (o.nombre_candidatures || 0), 0)}
+                {offres.reduce((acc: number, o: any) => acc + (o.candidatures_count ?? o.nombre_candidatures ?? 0), 0)}
               </p>
             </div>
             <Users className="h-8 w-8 text-muted-foreground" />
@@ -245,7 +245,8 @@ export default function RecruiterJobsPage() {
           </Card>
         ) : (
           filteredOffres.map((job: any) => {
-            const progress = job.nombre_candidatures > 0 ? Math.min((job.nombre_candidatures / 50) * 100, 100) : 0
+            const candidaturesCount = job.candidatures_count ?? job.nombre_candidatures ?? 0
+            const progress = candidaturesCount > 0 ? Math.min((candidaturesCount / 50) * 100, 100) : 0
             return (
               <Card key={job.id} className="p-6 hover:shadow-lg transition-all">
                 <div className="flex items-start justify-between mb-4">
@@ -328,7 +329,7 @@ export default function RecruiterJobsPage() {
                   <div className="flex items-center gap-2 text-sm">
                     <Send className="h-4 w-4 text-muted-foreground" />
                     <span className="text-muted-foreground">Candidatures:</span>
-                    <span className="font-semibold">{job.nombre_candidatures || 0}</span>
+                    <span className="font-semibold">{job.candidatures_count ?? job.nombre_candidatures ?? 0}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Eye className="h-4 w-4 text-muted-foreground" />
@@ -361,7 +362,7 @@ export default function RecruiterJobsPage() {
                   <Button size="sm" variant="outline" asChild>
                     <Link href={`/recruiter/matching?offre=${job.id}`}>
                       <Users className="mr-2 h-4 w-4" />
-                      Voir les candidatures ({job.nombre_candidatures || 0})
+                      Voir les candidatures ({job.candidatures_count ?? job.nombre_candidatures ?? 0})
                     </Link>
                   </Button>
                   <Button size="sm" variant="outline" asChild>

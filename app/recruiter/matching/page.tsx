@@ -80,8 +80,27 @@ export default function RecruiterMatchingPage() {
       const { candidatureApi } = await import("@/lib/api-client")
       const data = await candidatureApi.forOffre(offreId!)
       setCandidatures(data.data || [])
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors du chargement des candidatures:", error)
+      if (error.status === 403) {
+        toast({
+          title: "Accès refusé",
+          description: "Vous n'êtes pas autorisé à voir les candidatures de cette offre.",
+          variant: "destructive",
+        })
+      } else if (error.status === 404) {
+        toast({
+          title: "Offre non trouvée",
+          description: "L'offre demandée n'existe pas.",
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les candidatures. " + (error.message || ""),
+          variant: "destructive",
+        })
+      }
     } finally {
       setLoadingCandidatures(false)
     }
