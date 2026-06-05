@@ -65,7 +65,7 @@ export default function MatchingPage() {
       }
 
       const response = await matchingApi.list({
-        min_score: 50, // Score minimum de 50%
+        min_score: 30, // Seuil abaissé : la similarité sémantique dépasse rarement 55%
       })
 
       setMatchedJobs(response.data || [])
