@@ -76,7 +76,7 @@ export default function CandidateProfilePage() {
     try {
       const { messageApi } = await import("@/lib/api-client")
       const data = await messageApi.getOrCreateConversation(userId)
-      router.push(`/recruiter/messages?conversation=${data.id}`)
+      router.push(`/recruiter/messages?conversation=${data.conversation?.id ?? data.id}`)
     } catch (error) {
       console.error("Erreur lors de la création de la conversation:", error)
       alert("Erreur lors de l'ouverture de la conversation")

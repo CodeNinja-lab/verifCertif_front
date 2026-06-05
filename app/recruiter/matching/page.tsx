@@ -36,6 +36,7 @@ export default function RecruiterMatchingPage() {
   const offreId = searchParams.get("offre")
   const [searchQuery, setSearchQuery] = useState("")
   const [filterStatus, setFilterStatus] = useState("all")
+  const [filterPosition, setFilterPosition] = useState("all")
   const [matchings, setMatchings] = useState<any[]>([])
   const [candidatures, setCandidatures] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
