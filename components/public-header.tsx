@@ -1,30 +1,64 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { 
-  Menu, 
-  X, 
-  Briefcase, 
-  Users, 
-  Building2, 
-  BarChart3, 
-  ChevronDown, 
+import {
+  Menu,
+  X,
+  Briefcase,
+  Users,
+  Building2,
+  BarChart3,
+  ChevronDown,
   GraduationCap,
   Shield,
   ScanLine,
   Sparkles,
   FileCheck,
   Brain,
-  Home
+  Home,
+  LayoutDashboard,
+  LogOut
 } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Logo } from "@/components/logo"
+import { getCurrentUser, clearAuth } from "@/lib/auth-utils"
+
+// Espace (dashboard) correspondant au rôle de l'utilisateur connecté
+function getDashboardPath(role?: string): string {
+  switch (role) {
+    case "recruteur":
+      return "/recruiter"
+    case "administration":
+      return "/university"
+    case "admin":
+      return "/admin"
+    case "etudiant":
+    default:
+      return "/candidate"
+  }
+}
 
 export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+  const [user, setUser] = useState<any | null>(null)
+  const router = useRouter()
+
+  // Détecter l'état de connexion côté client (localStorage)
+  useEffect(() => {
+    setUser(getCurrentUser())
+  }, [])
+
+  const dashboardPath = getDashboardPath(user?.role)
+
+  const handleLogout = () => {
+    clearAuth()
+    setUser(null)
+    router.push("/")
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background">
@@ -158,12 +192,29 @@ export function PublicHeader() {
         {/* CTA Buttons */}
         <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-3 lg:items-center">
           <ThemeToggle />
-          <Button variant="ghost" asChild>
-            <Link href="/login">Se connecter</Link>
-          </Button>
-          <Button asChild className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 transition-opacity">
-            <Link href="/signup">Créer un compte</Link>
-          </Button>
+          {user ? (
+            <>
+              <Button asChild className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 transition-opacity">
+                <Link href={dashboardPath} className="flex items-center gap-2">
+                  <LayoutDashboard className="h-4 w-4" />
+                  Mon espace
+                </Link>
+              </Button>
+              <Button variant="ghost" onClick={handleLogout} className="flex items-center gap-2">
+                <LogOut className="h-4 w-4" />
+                Déconnexion
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" asChild>
+                <Link href="/login">Se connecter</Link>
+              </Button>
+              <Button asChild className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 transition-opacity">
+                <Link href="/signup">Créer un compte</Link>
+              </Button>
+            </>
+          )}
         </div>
       </nav>
 
@@ -244,12 +295,29 @@ export function PublicHeader() {
               <div className="flex justify-center pb-2">
                 <ThemeToggle />
               </div>
-              <Button variant="outline" className="w-full bg-transparent" asChild>
-                <Link href="/login">Se connecter</Link>
-              </Button>
-              <Button className="w-full bg-gradient-to-r from-primary to-secondary" asChild>
-                <Link href="/signup">Créer un compte</Link>
-              </Button>
+              {user ? (
+                <>
+                  <Button className="w-full bg-gradient-to-r from-primary to-secondary" asChild>
+                    <Link href={dashboardPath} className="flex items-center justify-center gap-2">
+                      <LayoutDashboard className="h-4 w-4" />
+                      Mon espace
+                    </Link>
+                  </Button>
+                  <Button variant="outline" className="w-full bg-transparent flex items-center justify-center gap-2" onClick={handleLogout}>
+                    <LogOut className="h-4 w-4" />
+                    Déconnexion
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" className="w-full bg-transparent" asChild>
+                    <Link href="/login">Se connecter</Link>
+                  </Button>
+                  <Button className="w-full bg-gradient-to-r from-primary to-secondary" asChild>
+                    <Link href="/signup">Créer un compte</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>

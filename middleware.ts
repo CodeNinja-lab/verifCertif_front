@@ -9,6 +9,10 @@ const protectedRoutes: Record<string, string[]> = {
   "/university": ["admin", "administration"],
 }
 
+// Routes accessibles à tout utilisateur connecté (peu importe le rôle).
+// Les offres d'emploi ne doivent pas être visibles sans être connecté.
+const authOnlyRoutes: string[] = ["/jobs"]
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -22,12 +26,15 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Vérifier si la route est protégée
+  // Vérifier si la route est protégée (par rôle ou simplement par connexion)
   const protectedRoute = Object.keys(protectedRoutes).find((route) =>
     pathname.startsWith(route)
   )
+  const authOnlyRoute = authOnlyRoutes.find((route) =>
+    pathname.startsWith(route)
+  )
 
-  if (!protectedRoute) {
+  if (!protectedRoute && !authOnlyRoute) {
     return NextResponse.next()
   }
 
@@ -52,6 +59,8 @@ export const config = {
     "/candidate/:path*",
     "/admin/:path*",
     "/university/:path*",
+    "/jobs/:path*",
+    "/jobs",
   ],
 }
 
