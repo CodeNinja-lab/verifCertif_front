@@ -70,7 +70,8 @@ export default function JobDetailPage() {
       setLoading(true)
       const { offreApi } = await import("@/lib/api-client")
       const data = await offreApi.get(jobId)
-      setJob(data.offre || data)
+      // Le backend renvoie un Resource Laravel : { data: {...offre} }
+      setJob(data.data || data.offre || data)
       
       // Charger des offres similaires
       const similarData = await offreApi.list({ per_page: 3 })
