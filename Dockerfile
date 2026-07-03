@@ -15,7 +15,7 @@ COPY . .
 
 # IMPORTANT : les variables NEXT_PUBLIC_* sont injectées dans le bundle
 # AU MOMENT DU BUILD. C'est ici qu'on fixe l'adresse de l'API backend.
-ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_API_URL=https://api.acadys.dev.pixpay.sn/api/v1
 ARG NEXT_PUBLIC_APP_NAME=VeriCertis
 ARG NEXT_PUBLIC_ENV=production
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
