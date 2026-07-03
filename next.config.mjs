@@ -5,14 +5,21 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    unoptimized: true,    remotePatterns: [
+    unoptimized: true,
+    remotePatterns: [
       {
         protocol: 'http',
         hostname: 'localhost',
         port: '8000',
         pathname: '/storage/**',
       },
-    ],  },
+      {
+        protocol: 'https',
+        hostname: 'api.acadys.dev.pixpay.sn',
+        pathname: '/storage/**',
+      },
+    ],
+  },
 }
 
 export default nextConfig
