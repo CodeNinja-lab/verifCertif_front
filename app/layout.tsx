@@ -20,23 +20,22 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "ACADYS - Academic Digital System",
   description: "Plateforme de certification blockchain et matching IA pour diplômes académiques au Sénégal.",
-  generator: "v0.app",
   icons: {
     icon: [
       {
-        url: "/icon-light-32x32.png",
+        url: "/logo-acadys.png",
         media: "(prefers-color-scheme: light)",
       },
       {
-        url: "/icon-dark-32x32.png",
+        url: "/logo-acadys.png",
         media: "(prefers-color-scheme: dark)",
       },
       {
-        url: "/icon.svg",
-        type: "image/svg+xml",
+        url: "/logo-acadys.png",
+        type: "image/png",
       },
     ],
-    apple: "/apple-icon.png",
+    apple: "/logo-acadys.png",
   },
 }
 

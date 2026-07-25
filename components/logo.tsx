@@ -9,6 +9,10 @@ interface LogoProps {
   size?: "sm" | "md" | "lg" | "xl"
   showText?: boolean
   className?: string
+  imageSrc?: string
+  imageAlt?: string
+  brandName?: string
+  subtitle?: string
 }
 
 const sizeConfig = {
@@ -38,7 +42,16 @@ const sizeConfig = {
   },
 }
 
-export function Logo({ href = "/", size = "md", showText = true, className }: LogoProps) {
+export function Logo({
+  href = "/",
+  size = "md",
+  showText = true,
+  className,
+  imageSrc = "/logo-acadys.png",
+  imageAlt = "Logo de l'application",
+  brandName = "ACADYS",
+  subtitle = "Certification Académique",
+}: LogoProps) {
   const config = sizeConfig[size]
 
   const content = (
@@ -53,8 +66,8 @@ export function Logo({ href = "/", size = "md", showText = true, className }: Lo
         config.container
       )}>
         <Image
-          src="/logo-acadys.png"
-          alt="ACADYS - Certification Académique"
+          src={imageSrc}
+          alt={imageAlt}
           fill
           className="object-cover"
           priority
@@ -67,13 +80,13 @@ export function Logo({ href = "/", size = "md", showText = true, className }: Lo
             "bg-gradient-to-r from-[#1e3a5f] to-[#3b82f6] bg-clip-text text-transparent",
             config.text
           )}>
-            ACADYS
+            {brandName}
           </span>
           <span className={cn(
             "text-muted-foreground font-medium -mt-0.5 tracking-wide uppercase",
             config.subtitle
           )}>
-            Certification Académique
+            {subtitle}
           </span>
         </div>
       )}
@@ -98,6 +111,9 @@ interface SidebarLogoProps {
   variant?: "default" | "admin" | "university" | "candidate"
   subtitle?: string
   className?: string
+  imageSrc?: string
+  imageAlt?: string
+  brandName?: string
 }
 
 export function SidebarLogo({ 
@@ -105,7 +121,10 @@ export function SidebarLogo({
   collapsed = false, 
   variant = "default",
   subtitle = "Certification Académique",
-  className 
+  className,
+  imageSrc = "/logo-acadys.png",
+  imageAlt = "Logo de l'application",
+  brandName = "ACADYS",
 }: SidebarLogoProps) {
   const content = (
     <div className={cn("flex items-center gap-2.5 group", className)}>
@@ -117,8 +136,8 @@ export function SidebarLogo({
         "transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg"
       )}>
         <Image
-          src="/logo-acadys.png"
-          alt="ACADYS Logo"
+          src={imageSrc}
+          alt={imageAlt}
           fill
           className="object-cover"
           priority
@@ -127,7 +146,7 @@ export function SidebarLogo({
       {!collapsed && (
         <div className="flex flex-col">
           <span className="text-sm font-bold tracking-tight bg-gradient-to-r from-[#1e3a5f] to-[#3b82f6] bg-clip-text text-transparent">
-            ACADYS
+            {brandName}
           </span>
           <span className="text-[10px] text-muted-foreground font-medium -mt-0.5 uppercase tracking-wide">
             {subtitle}
