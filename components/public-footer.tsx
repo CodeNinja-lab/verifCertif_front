@@ -214,9 +214,6 @@ export function PublicFooter() {
             <p className="text-sm text-muted-foreground">
               © {currentYear} ACADYS - Academic Digital System. Tous droits réservés.
             </p>
-            <p className="text-xs text-muted-foreground">
-              Développé avec ❤️ pour la modernisation de l'enseignement supérieur
-            </p>
           </div>
         </div>
       </div>
